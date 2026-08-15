@@ -8,19 +8,19 @@ package com.practica.promptzal.lexer;
  *
  * @author wilian
  */
-public class TipoToken {
+public enum TipoToken {
     
-    public static final TipoToken DIRECTIVA = new TipoToken("Directiva");
-    public static final TipoToken RESERVADA = new TipoToken("Palabra reservada");
-    public static final TipoToken COMANDO_IA = new TipoToken("Comando de IA");
-    public static final TipoToken CONECTOR = new TipoToken("Conector");
-    public static final TipoToken IDENTIFICADOR = new TipoToken("Identificador");
-    public static final TipoToken CADENA = new TipoToken("Literal de cadena");
-    public static final TipoToken ENTERO = new TipoToken("Literal entero");
-    public static final TipoToken DECIMAL = new TipoToken("Literal decimal");
-    public static final TipoToken OPERADOR = new TipoToken("Operador");
-    public static final TipoToken DELIMITADOR = new TipoToken("Delimitador");
-    public static final TipoToken FUNCION = new TipoToken("Funcion");
+     DIRECTIVA("Directiva"),
+    RESERVADA("Palabra reservada"),
+    COMANDO_IA("Comando de IA"),
+    CONECTOR("Conector"),
+    IDENTIFICADOR("Identificador"),
+    CADENA("Literal de cadena"),
+    ENTERO("Literal entero"),
+    DECIMAL("Literal decimal"),
+    OPERADOR("Operador"),
+    DELIMITADOR("Delimitador"),
+    FUNCION("Funcion");
     
     private final String descripcion;
     
@@ -36,6 +36,4 @@ public class TipoToken {
     public String toString() {
         return descripcion;
     }
-     
-     
 }
