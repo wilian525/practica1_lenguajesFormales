@@ -41,8 +41,14 @@ public class ErrorLexico {
 
     @Override
     public String toString() {
-        return "ErrorLexico{" + "lexema=" + lexema + ", descripcion=" + descripcion + ", fila=" + fila + ", columna=" + columna + '}';
-    }
+
+    return "ErrorLexico{"
+            + "lexema='" + lexema + '\''
+            + ", descripcion='" + descripcion + '\''
+            + ", fila=" + fila
+            + ", columna=" + columna
+            + '}';
+}
                  
     
             

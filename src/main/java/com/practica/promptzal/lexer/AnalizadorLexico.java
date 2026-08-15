@@ -29,32 +29,67 @@ public class AnalizadorLexico {
         this.columna = 1;
         this.numeroToken =1;
         
-         tokens = new Token[1000];
-        errores = new ErrorLexico[500];
+         tokens = new Token[10];
+        errores = new ErrorLexico[10];
 
         cantidadTokens = 0;
         cantidadErrores = 0;
   
     }
     
-    public void analizar(){
-        while(posicion < entrada.length()){
-            char actual = entrada.charAt(posicion);
-            if (actual == ' ' || actual == '\t' || actual == '\r') {
-                 avanzar();
-            }else if(actual == '\n'){
-                    avanzar();
-            }else if(esLetra(actual) || actual == '_'){
-                 analizadorPalabra();       
-          } else if(esDigito(actual)){
-                    analizarNumero();
-           }else if(actual == '@'){
-                    analizadorDirectivo();
-                  }else{
-                    analizadorSimbolo();
-                  }
+   public void analizar() {
+
+    while (posicion < entrada.length()) {
+
+        char actual = entrada.charAt(posicion);
+
+        // Espacios y saltos de línea
+        if (actual == ' '
+                || actual == '\t'
+                || actual == '\r'
+                || actual == '\n') {
+
+            avanzar();
+
+        // Cadenas
+        } else if (actual == '"') {
+
+            analizarCadena();
+
+        // Comentario de línea
+        } else if (actual == '/'
+                && siguienteEs('/')) {
+
+            ignorarComentarioLinea();
+
+        // Comentario de bloque
+        } else if (actual == '/'
+                && siguienteEs('*')) {
+
+            ignorarComentarioBloque();
+
+        // Palabras e identificadores
+        } else if (esLetra(actual) || actual == '_') {
+
+            analizadorPalabra();
+
+        // Números
+        } else if (esDigito(actual)) {
+
+            analizarNumero();
+
+        // Directivas
+        } else if (actual == '@') {
+
+            analizadorDirectivo();
+
+        // Símbolos y errores
+        } else {
+
+            analizadorSimbolo();
         }
     }
+}
     
        // reconoce palabra reservada,Ia,funciones e identificadores
     public void analizadorPalabra(){
@@ -153,7 +188,7 @@ private void analizadorDirectivo(){
     int filaInicio = fila;
     int columnaInicio = columna;
     StringBuilder lexema = new StringBuilder();
-    lexema.append(0);
+    lexema.append('@');
     avanzar();
     
     while(posicion < entrada.length() ){
@@ -161,6 +196,7 @@ private void analizadorDirectivo(){
        
         if (esLetra(actual) || esDigito(actual) || actual == '_') {
             lexema.append(actual);
+            avanzar();
         }else{
             break;
         }
@@ -218,7 +254,7 @@ private void analizadorDirectivo(){
 
 
             case '-':
-                if (SiguienteEs('>')) {
+                if (siguienteEs('>')) {
                     agregarToken("->", TipoToken.CONECTOR,filaInicio,columnaInicio );
 
                     // Consumimos -
@@ -241,7 +277,7 @@ private void analizadorDirectivo(){
     }
     
     // Comprueba el caracter siguiente no mueve la posicion
-    private boolean SiguienteEs(char esperado){
+    private boolean siguienteEs(char esperado){
         if (posicion +1 >= entrada.length()) {
             return false;
         }
@@ -259,7 +295,7 @@ private void analizadorDirectivo(){
     
     // Reconocimiento manual de letras
     private boolean esLetra(char caracter){
-            return(caracter >= 'a' && caracter <= 'z' || (caracter >= 'A' && caracter <= 'z'));
+            return(caracter >= 'a' && caracter <= 'z' || (caracter >= 'A' && caracter <= 'Z'));
     }
     
     // Reconocimiento de numeros
@@ -268,18 +304,62 @@ private void analizadorDirectivo(){
     }
     
     //Avanza un caracter y matiene correctamente fila y columna
-    private void avanzar(){
-        if (posicion >= entrada.length()) {
-            return;
-        }
-        char actual = entrada.charAt(posicion);
-        posicion++;
+    private void avanzar() {
+
+    if (posicion >= entrada.length()) {
+        return;
+    }
+
+    char actual = entrada.charAt(posicion);
+
+    posicion++;
+
+    if (actual == '\n') {
+
+        fila++;
+        columna = 1;
+
+    } else {
+
+        columna++;
+    }
+}
+    
+    private void analizarCadena(){
+        int filaInicio = fila;
+        int columnaInicio = columna;
         
-        if (actual == '\n') {
-             fila++;
-             columna = 1;
-        } else{
-            columna++;
+        StringBuilder lexema = new StringBuilder();
+        boolean cerrada = false;
+        
+        //Guarda comillas iniciales
+        lexema.append('"');
+        avanzar();
+        
+        while(posicion < entrada.length()){
+            char actual = entrada.charAt(posicion);
+            
+            //Encontramos comillas de cierre
+            if (actual == '"') {
+                lexema.append('"');
+                avanzar();
+                
+                cerrada = true;
+                break;
+            }
+            
+            //si se llega a un salto de linea sin cerrar considera la cadena no cerrada
+            if (actual == '\n') {
+                break;
+            }
+            lexema.append(actual);
+            avanzar();
+        }
+        if (cerrada) {
+            agregarToken(lexema.toString(),TipoToken.CADENA,filaInicio,columnaInicio);
+            
+        }else{
+            agregarError(lexema.toString(),"Cadena sin cerrar",filaInicio,columnaInicio);
         }
     }
     
@@ -330,6 +410,33 @@ private void analizadorDirectivo(){
     }
     errores = nuevoArreglo;
 }
+    public void ignorarComentarioLinea(){
+        // consumimos
+        avanzar();
+        avanzar();
+    
+        while(posicion < entrada.length()){
+            char actual = entrada.charAt(posicion);
+            if (actual == '\n') {
+                break;
+            }
+            avanzar();
+        }
+    }
+    
+    public void ignorarComentarioBloque(){
+        avanzar();
+        avanzar();
+        
+        while(posicion < entrada.length()){
+            if (entrada.charAt(posicion) == '*' && siguienteEs('/')) {
+                avanzar();
+                avanzar();
+                return;
+            }
+            avanzar();
+        }
+    }
 
     public Token[] getTokens() {
         return tokens;
