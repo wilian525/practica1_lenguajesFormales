@@ -39,8 +39,14 @@ public static final String ANSI_BLUE = "\u001B[34m";
         System.out.println(ANSI_RED+"▐╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═╝        ╚═╝   ╚══════╝╚═╝  ╚═╝╚══════╝▌");
         System.out.println(ANSI_RED+"▐▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▌"+ ANSI_RESET);
        
+        System.out.println("\n");
+       
+        System.out.println(  "░▀█▀░█▀█░█▀▀░█▀▄░█▀▀░█▀▀░█▀▀░░░█░░░█▀█░░░█▀▄░█░█░▀█▀░█▀█░░░█▀▄░█▀▀░█░░░░░█▀█░█▀▄░█▀▀░█░█░▀█▀░█░█░█▀█░░░░░░█▀█░▀▀█");
+        System.out.println(  "░░█░░█░█░█░█░█▀▄░█▀▀░▀▀█░█▀▀░░░█░░░█▀█░░░█▀▄░█░█░░█░░█▀█░░░█░█░█▀▀░█░░░░░█▀█░█▀▄░█░░░█▀█░░█░░▀▄▀░█░█░░░░░░█▀▀░▄▀░");
+        System.out.println(  "░▀▀▀░▀░▀░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀▀▀░░░▀▀▀░▀░▀░░░▀░▀░▀▀▀░░▀░░▀░▀░░░▀▀░░▀▀▀░▀▀▀░░░▀░▀░▀░▀░▀▀▀░▀░▀░▀▀▀░░▀░░▀▀▀░░░▀░░▀░░░▀▀▀");
+        System.out.println("\n ingrese:");
 
-   System.out.print("Ingrese la ruta del archivo .pz: ");
+
 
         String ruta = scanner.nextLine();
 
@@ -101,6 +107,10 @@ public static final String ANSI_BLUE = "\u001B[34m";
         System.out.println(
                 "===== TOKENS ====="
         );
+        System.out.println("░▀█▀░█▀█░█░█░█▀▀░█▀█░█▀▀");
+        System.out.println("░░█░░█░█░█▀▄░█▀▀░█░█░▀▀█");
+        System.out.println("░░▀░░▀▀▀░▀░▀░▀▀▀░▀░▀░▀▀▀");
+
 
 
         System.out.printf(
@@ -146,6 +156,9 @@ public static final String ANSI_BLUE = "\u001B[34m";
         System.out.println(
                 "===== ERRORES LEXICOS ====="
         );
+         System.out.println(" ░█▀▀░█▀▄░█▀▄░█▀█░█▀▄░█▀▀░█▀▀░░░█░░░█▀▀░█░█░▀█▀░█▀▀░█▀█");
+         System.out.println(" ░█▀▀░█▀▄░█▀▄░█░█░█▀▄░█▀▀░▀▀█░░░█░░░█▀▀░▄▀▄░░█░░█░░░█░█");
+         System.out.println(" ░▀▀▀░▀░▀░▀░▀░▀▀▀░▀░▀░▀▀▀░▀▀▀░░░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀▀▀░▀▀▀");
 
 
         if (analizador.getCantidadErrores() == 0) {
