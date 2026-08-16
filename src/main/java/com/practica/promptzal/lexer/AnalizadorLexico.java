@@ -53,34 +53,26 @@ public class AnalizadorLexico {
 
         // Cadenas
         } else if (actual == '"') {
-
             analizarCadena();
 
         // Comentario de línea
-        } else if (actual == '/'
-                && siguienteEs('/')) {
-
+        } else if (actual == '/' && siguienteEs('/')) {
             ignorarComentarioLinea();
 
         // Comentario de bloque
-        } else if (actual == '/'
-                && siguienteEs('*')) {
-
+        } else if (actual == '/'&& siguienteEs('*')) {
             ignorarComentarioBloque();
 
         // Palabras e identificadores
         } else if (esLetra(actual) || actual == '_') {
-
             analizadorPalabra();
 
         // Números
         } else if (esDigito(actual)) {
-
             analizarNumero();
 
         // Directivas
         } else if (actual == '@') {
-
             analizadorDirectivo();
 
         // Símbolos y errores
@@ -175,6 +167,7 @@ public class AnalizadorLexico {
                break;
            }
        }
+       
        if (tieneDecimal) {
                 agregarToken(lexema.toString(),TipoToken.DECIMAL,filaInicio,columnaInico);
        }
