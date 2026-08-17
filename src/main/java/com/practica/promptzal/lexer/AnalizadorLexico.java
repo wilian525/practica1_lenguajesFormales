@@ -403,7 +403,7 @@ private void analizadorDirectivo(){
     }
     errores = nuevoArreglo;
 }
-    public void ignorarComentarioLinea(){
+    private void ignorarComentarioLinea(){
         // consumimos
         avanzar();
         avanzar();
@@ -417,7 +417,10 @@ private void analizadorDirectivo(){
         }
     }
     
-    public void ignorarComentarioBloque(){
+    private void ignorarComentarioBloque(){
+            int filaInicio = fila;
+            int columnaInicio = columna;
+        
         avanzar();
         avanzar();
         
@@ -429,6 +432,8 @@ private void analizadorDirectivo(){
             }
             avanzar();
         }
+        
+        agregarError("/*","Comentario de bloque sin cerrar", filaInicio,columnaInicio);
     }
 
     public Token[] getTokens() {
