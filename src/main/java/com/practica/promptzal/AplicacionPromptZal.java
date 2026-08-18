@@ -23,7 +23,7 @@ import java.util.Scanner;
 
 public class AplicacionPromptZal {
     
-  public static final String ANSI_RESET = "\u001B[0m";
+public static final String ANSI_RESET = "\u001B[0m";
 public static final String ANSI_RED = "\u001B[31m";
 public static final String ANSI_GREEN = "\u001B[32m";
 public static final String ANSI_BLUE = "\u001B[34m";
@@ -36,13 +36,9 @@ public static final String ANSI_BLUE = "\u001B[34m";
         gestorArchivo = new GestorArchivo();
     }
 
-
-    /*
-     * Inicia el programa y mantiene activo
-     * el menú hasta que el usuario decida salir.
-     */
+     // Inicia el programa y mantiene activo el menú hasta que el usuario decida salir.
+    
     public void iniciar() {
-
         boolean ejecutando = true;
 
         mostrarEncabezado();
@@ -77,10 +73,7 @@ public static final String ANSI_BLUE = "\u001B[34m";
         scanner.close();
     }
 
-
-    /*
-     * Muestra las opciones principales.
-     */
+     // Muestra las opciones principales.
     private void mostrarMenu() {
 
         System.out.println();
@@ -88,38 +81,21 @@ public static final String ANSI_BLUE = "\u001B[34m";
                 "============= MENU PRINCIPAL ============="
         );
 
-        System.out.println(
-                "1. Analizar archivo .pz"
-        );
+        System.out.println( "1. Analizar archivo .pz" );
 
-        System.out.println(
-                "2. Salir"
-        );
+        System.out.println("2. Salir");
 
-        System.out.println(
-                "=========================================="
-        );
+        System.out.println( "==========================================");
 
            System.out.println("            .---------------------------------------------------------.");
-            System.out.println("|╔═╗┌─┐┬  ┌─┐┌─┐┌─┐┬┌─┐┌┐┌┌─┐  ┬ ┬┌┐┌┌─┐  ┌─┐┌─┐┌─┐┬┌─┐┌┐┌|");
-            System.out.println("|╚═╗├┤ │  ├┤ │  │  ││ ││││├┤   │ ││││├─┤  │ │├─┘│  ││ ││││|");
-            System.out.println("|╚═╝└─┘┴─┘└─┘└─┘└─┘┴└─┘┘└┘└─┘  └─┘┘└┘┴ ┴  └─┘┴  └─┘┴└─┘┘└┘|");
+            System.out.println(ANSI_RED+ "|╔═╗┌─┐┬  ┌─┐┌─┐┌─┐┬┌─┐┌┐┌┌─┐  ┬ ┬┌┐┌┌─┐  ┌─┐┌─┐┌─┐┬┌─┐┌┐┌|");
+            System.out.println(ANSI_RED+"|╚═╗├┤ │  ├┤ │  │  ││ ││││├┤   │ ││││├─┤  │ │├─┘│  ││ ││││|");
+            System.out.println(ANSI_RED+"|╚═╝└─┘┴─┘└─┘└─┘└─┘┴└─┘┘└┘└─┘  └─┘┘└┘┴ ┴  └─┘┴  └─┘┴└─┘┘└┘|");
             System.out.println("'---------------------------------------------------------'");
             System.out.println("\n");
-            System.out.print("Seleccione una opcion : "); 
-        
+            System.out.print("Seleccione una opcion : "+ ANSI_RESET); 
     }
 
-
-    /*
-     * Solicita un archivo al usuario.
-     *
-     * Por ahora esta clase sigue realizando
-     * la lectura del archivo.
-     *
-     * En el siguiente paso esta responsabilidad
-     * se movera a GestorArchivo.
-     */
     private void analizarArchivo() {
 
         System.out.println();
@@ -143,7 +119,6 @@ public static final String ANSI_BLUE = "\u001B[34m";
             return;
         }
 
-
         // Validar extensión
         if (!gestorArchivo.esArchivoPz(ruta)) {
              System.out.println();
@@ -151,7 +126,6 @@ public static final String ANSI_BLUE = "\u001B[34m";
              
             return;
         }
-        
         if (!gestorArchivo.existeArchivo(ruta)) {
                     System.out.println();
                     System.out.println("No se encontro el archivo.");
@@ -185,10 +159,7 @@ public static final String ANSI_BLUE = "\u001B[34m";
         }
     }
 
-    /*
-     * Muestra la tabla de tokens
-     * requerida por la práctica.
-     */
+     // Muestra la tabla de tokens
     private void mostrarTokens(
             AnalizadorLexico analizador) {
 
@@ -223,12 +194,6 @@ public static final String ANSI_BLUE = "\u001B[34m";
     }
 
 
-    /*
-     * Muestra todos los errores encontrados.
-     *
-     * Si no existen errores, lo indica
-     * explícitamente.
-     */
     private void mostrarErrores(
             AnalizadorLexico analizador) {
         
@@ -241,7 +206,6 @@ public static final String ANSI_BLUE = "\u001B[34m";
 
             return;
         }
-
 
         System.out.printf(
                 "%-30s %-30s %-8s %-8s%n",
@@ -267,12 +231,6 @@ public static final String ANSI_BLUE = "\u001B[34m";
         }
     }
 
-
-    /*
-     * Genera ambos reportes HTML.
-     *
-     * Se ejecuta haya o no errores.
-     */
     private void generarReportes(  AnalizadorLexico analizador, String ruta) throws IOException {
 
          Path carpetaReportes= gestorArchivo.creerCarpetaReportes(ruta);
@@ -299,23 +257,15 @@ public static final String ANSI_BLUE = "\u001B[34m";
                 "===== REPORTES GENERADOS ====="
         );
 
-         System.out.println(ANSI_BLUE + "░█▀▄░█▀▀░█▀█░█▀█░█▀▄░▀█▀░█▀▀░█▀▀░░░█▀▀░█▀▀░█▀█░█▀▀░█▀▄░█▀█░█▀▄░█▀█░█▀▀");
-          System.out.println(ANSI_BLUE +"░█▀▄░█▀▀░█▀▀░█░█░█▀▄░░█░░█▀▀░▀▀█░░░█░█░█▀▀░█░█░█▀▀░█▀▄░█▀█░█░█░█░█░▀▀█");
-          System.out.println(ANSI_BLUE +"░▀░▀░▀▀▀░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀░▀▀▀░░░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀░▀░▀░▀░▀▀░░▀▀▀░▀▀▀"+ ANSI_RESET);
+         System.out.println(ANSI_RED + "░█▀▄░█▀▀░█▀█░█▀█░█▀▄░▀█▀░█▀▀░█▀▀░░░█▀▀░█▀▀░█▀█░█▀▀░█▀▄░█▀█░█▀▄░█▀█░█▀▀");
+          System.out.println(ANSI_RED +"░█▀▄░█▀▀░█▀▀░█░█░█▀▄░░█░░█▀▀░▀▀█░░░█░█░█▀▀░█░█░█▀▀░█▀▄░█▀█░█░█░█░█░▀▀█");
+          System.out.println(ANSI_RED +"░▀░▀░▀▀▀░▀░░░▀▀▀░▀░▀░░▀░░▀▀▀░▀▀▀░░░▀▀▀░▀▀▀░▀░▀░▀▀▀░▀░▀░▀░▀░▀▀░░▀▀▀░▀▀▀"+ ANSI_RESET);
             
 
         System.out.println( "Tokens: " + rutaReporteTokens );
-
         System.out.println( "Errores: "+ rutaReporteErrores);
     }
 
-
-    /*
-     * Encabezado de la aplicación.
-     *
-     * Puedes sustituir estas líneas después
-     * por el ASCII que ya tienes.
-     */
     private void mostrarEncabezado() {
 
           System.out.println();
