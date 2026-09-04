@@ -2,9 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.practica.promptzal.reporte;
+package com.practica.promptzal.Backend.reporte;
 
-import com.practica.promptzal.lexer.Token;
+import com.practica.promptzal.Backend.lexer.Token;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

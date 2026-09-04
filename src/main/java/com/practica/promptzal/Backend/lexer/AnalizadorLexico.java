@@ -2,7 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.practica.promptzal.lexer;
+package com.practica.promptzal.Backend.lexer;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *
@@ -16,27 +19,68 @@ public class AnalizadorLexico {
     private int columna;
     private int numeroToken;
 
-    private Token[] tokens;
-    private ErrorLexico[] errores;
-
-    private int cantidadTokens;
-    private int cantidadErrores;
+   private ArrayList<Token> tokens;
+   private ArrayList<ErrorLexico> errores;
+   private HashMap<String, TipoToken> palabrasEspeciales;
    
-    public AnalizadorLexico(String entrada){
-        this.entrada = entrada;
-        this.posicion = 0;
-        this.fila = 1;
-        this.columna = 1;
-        this.numeroToken =1;
-        
-         tokens = new Token[10];
-        errores = new ErrorLexico[10];
+   private enum EstadoPalabra{
+       Q0,
+       Q1
+   }
+   private enum EstadoNumero{
+       Q0,
+       Q1_ENTERO,
+       Q2_PUNTO_DECIMAL,
+       Q3_DECIMAL
+   }
 
-        cantidadTokens = 0;
-        cantidadErrores = 0;
-  
-    }
+    public AnalizadorLexico(String entrada) {
+
+    this.entrada = entrada;
+
+    this.posicion = 0;
+    this.fila = 1;
+    this.columna = 1;
+    this.numeroToken = 1;
+
+    this.tokens = new ArrayList<>();
+    this.errores = new ArrayList<>();
+
+    this.palabrasEspeciales = new HashMap<>();
+
+    inicializarPalabrasEspeciales();
+}
     
+    private void inicializarPalabrasEspeciales(){
+        palabrasEspeciales.put("AGENTE", TipoToken.RESERVADA);
+        palabrasEspeciales.put("contexto", TipoToken.RESERVADA);
+        palabrasEspeciales.put("variable", TipoToken.RESERVADA);
+        palabrasEspeciales.put("EJECUTAR", TipoToken.RESERVADA);
+       palabrasEspeciales.put("EXPORTAR", TipoToken.RESERVADA);
+
+    // Comandos de IA
+    palabrasEspeciales.put("PREGUNTAR", TipoToken.COMANDO_IA);
+    palabrasEspeciales.put("GENERAR", TipoToken.COMANDO_IA);
+    palabrasEspeciales.put("RESUMIR", TipoToken.COMANDO_IA);
+    palabrasEspeciales.put("ANALIZAR", TipoToken.COMANDO_IA);
+    palabrasEspeciales.put("TRADUCIR", TipoToken.COMANDO_IA);
+    palabrasEspeciales.put("CLASIFICAR", TipoToken.COMANDO_IA);
+    palabrasEspeciales.put("EXTRAER", TipoToken.COMANDO_IA);
+
+    // Conectores
+    palabrasEspeciales.put("SOBRE", TipoToken.CONECTOR);
+    palabrasEspeciales.put("DESDE", TipoToken.CONECTOR);
+    palabrasEspeciales.put("EN", TipoToken.CONECTOR);
+    palabrasEspeciales.put("COMO", TipoToken.CONECTOR);
+
+    // Funcion del sistema
+    palabrasEspeciales.put("CARGAR", TipoToken.FUNCION);
+
+    // Directivas
+    palabrasEspeciales.put("@modelo", TipoToken.DIRECTIVA);
+    palabrasEspeciales.put("@rol", TipoToken.DIRECTIVA);
+    palabrasEspeciales.put("@formato", TipoToken.DIRECTIVA);
+    }
    public void analizar() {
 
     while (posicion < entrada.length()) {
@@ -48,7 +92,7 @@ public class AnalizadorLexico {
                 || actual == '\t'
                 || actual == '\r'
                 || actual == '\n') {
-
+// agregar mas tomar en cuenta
             avanzar();
 
         // Cadenas
@@ -90,8 +134,33 @@ public class AnalizadorLexico {
         
         StringBuilder lexema = new StringBuilder();
         
-         while(posicion  < entrada.length()){
+        EstadoPalabra estado = EstadoPalabra.Q0;
+        boolean terminado = false;
+        
+         while(!terminado && posicion  < entrada.length()){
              char actual = entrada.charAt(posicion);
+             
+             switch(estado){
+                 case Q0:
+                     if (esLetra(actual) || actual == '_') {
+                         lexema.append(actual);
+                         avanzar();
+                         
+                         estado = EstadoPalabra.Q1;
+                     } else {
+                         terminado = true;
+                     } 
+                     break;
+                     
+                 case Q1:
+                     if (esLetra(actual) || esDigito(actual) || actual == '_') {
+                         lexema.append(actual);
+                         avanzar();
+                     } else {
+                         terminado = true;
+                     }
+                     break;
+                }
              
              if (esLetra(actual) || esDigito(actual) || actual == '_') {
                  lexema.append(actual);
@@ -109,38 +178,10 @@ public class AnalizadorLexico {
     }
             // palabra reservada
    private TipoToken obtenerTipoPalabra(String palabra){
-       if (palabra.equals("AGENTE" ) 
-                || palabra.equals("contexto")
-                || palabra.equals("variable")
-                || palabra.equals("EJECUTAR")
-                || palabra.equals("EXPORTAR")) {
-  
-           return TipoToken.RESERVADA;
+      TipoToken tipo = palabrasEspeciales.get(palabra);
+       if (tipo != null) {
+           return tipo;
        }
-        // Comando Ia
-       if (palabra.equals("PREGUNTAR")
-            || palabra.equals("GENERAR")
-            || palabra.equals("RESUMIR")
-            || palabra.equals("ANALIZAR")
-            || palabra.equals("TRADUCIR")
-            || palabra.equals("CLASIFICAR")
-            || palabra.equals("EXTRAER")) {
-
-        return TipoToken.COMANDO_IA;
-    }
-       // connectores
-       if (palabra.equals("SOBRE")                  
-                || palabra.equals("DESDE")
-                || palabra.equals("EN")
-                || palabra.equals("COMO") ) {
-           
-           return  TipoToken.CONECTOR;
-       }
-       
-       if (palabra.equals("CARGAR")) {
-            return TipoToken.FUNCION;
-       }
-       //
        return TipoToken.IDENTIFICADOR;
    }
    
@@ -150,10 +191,26 @@ public class AnalizadorLexico {
        int columnaInico = columna;
        
        StringBuilder lexema = new StringBuilder();
+       EstadoNumero estado = EstadoNumero.Q0;
+       boolean terminado = false;
        boolean tieneDecimal = false;
        
-       while(posicion < entrada.length()){
+       while(! terminado && posicion < entrada.length()){
            char actual = entrada.charAt(posicion);
+           
+           switch(estado){
+               case Q0:
+                   if (esDigito(actual)) {
+                        lexema.append(actual);
+                        avanzar();
+                        
+                        estado = EstadoNumero.Q1_ENTERO;
+                   } else {
+                       terminado = true;
+                   }
+                   break;
+           }
+           
            if (esDigito(actual)) {
                lexema.append(actual);
                avanzar();
@@ -195,10 +252,12 @@ private void analizadorDirectivo(){
         }
     }
     String directiva = lexema.toString();
-    if (directiva.equals("@modelo") || directiva.equals("@rol") || directiva.equals("@formato")) {
+    TipoToken tipo = palabrasEspeciales.get(directiva);
+    
+    if (tipo == TipoToken.DIRECTIVA) {
             agregarToken(directiva,TipoToken.DIRECTIVA,filaInicio,columnaInicio);
-    } else{
-        agregarError(directiva,"Directiva no reconocida", filaInicio,columnaInicio);
+    } else {
+        agregarError(directiva,"Directiva no reconocida",filaInicio,columnaInicio);
     }
 }   
         
@@ -244,7 +303,11 @@ private void analizadorDirectivo(){
                 agregarToken( ",",TipoToken.DELIMITADOR, filaInicio, columnaInicio);
                 avanzar();
                 break;
-
+                
+                case';':
+                    agregarToken(";",TipoToken.DELIMITADOR,filaInicio,columnaInicio);
+                    avanzar();
+                    break;
 
             case '-':
                 if (siguienteEs('>')) {
@@ -359,50 +422,18 @@ private void analizadorDirectivo(){
     // guardar un nuevo token
     private void agregarToken(String lexema,TipoToken tipo,int fila,int columna){
         
-        if (cantidadTokens == tokens.length) {
-            aumentarArregloTokens();
-        }
-        Token nuevoToken = new Token(numeroToken, lexema,tipo,fila,columna);
-        tokens[cantidadTokens] = nuevoToken;
-        cantidadTokens++;
+        Token nuevoToken = new Token(numeroToken,lexema,tipo,fila,columna);
+        tokens.add(nuevoToken);
         numeroToken++;
+      
     }
     
     // guarda los errores el programa no termina
-    private void agregarError(String lexema,String descripcion,int fila, int columna){
-        if (cantidadErrores == errores.length) {
-            aumentarArregloErrores();
-        }
-        
-         ErrorLexico nuevoError = new ErrorLexico( lexema,descripcion,fila,columna);
-         
-         errores[cantidadErrores] = nuevoError;
-         cantidadErrores++;
+    private void agregarError(String lexema,TipoErrorLexico tipo,int fila, int columna){
+            ErrorLexico nuevoError = new ErrorLexico(lexema,tipo,fila,columna);
+            errores.add(nuevoError);
     }
     
-    private void aumentarArregloTokens() {
-
-    Token[] nuevoArreglo= new Token[tokens.length * 2];
-
-    for (int i = 0; i < tokens.length; i++) {
-
-        nuevoArreglo[i] = tokens[i];
-    }
-    tokens = nuevoArreglo;
-    }
-    
-    
-    private void aumentarArregloErrores() {
-
-    ErrorLexico[] nuevoArreglo
-            = new ErrorLexico[errores.length * 2];
-    
-    for (int i = 0; i < errores.length; i++) {
-        
-        nuevoArreglo[i] = errores[i];
-    }
-    errores = nuevoArreglo;
-}
     private void ignorarComentarioLinea(){
         // consumimos
         avanzar();
@@ -433,23 +464,23 @@ private void analizadorDirectivo(){
             avanzar();
         }
         
-        agregarError("/*","Comentario de bloque sin cerrar", filaInicio,columnaInicio);
+       // agregar error
     }
 
     public Token[] getTokens() {
-        return tokens;
+        return tokens.toArray(new Token[0]);
     }
 
     public ErrorLexico[] getErrores() {
-        return errores;
+        return errores.toArray(new ErrorLexico[0]);
     }
 
     public int getCantidadTokens() {
-        return cantidadTokens;
+        return tokens.size();
     }
 
     public int getCantidadErrores() {
-        return cantidadErrores;
+        return tokens.size();
     }
     
     

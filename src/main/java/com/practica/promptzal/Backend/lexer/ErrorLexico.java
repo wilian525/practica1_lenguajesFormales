@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.practica.promptzal.lexer;
+package com.practica.promptzal.Backend.lexer;
 
 /**
  *
@@ -11,13 +11,13 @@ package com.practica.promptzal.lexer;
 public class ErrorLexico {
     
     private String lexema;
-    private String descripcion;
+    private TipoErrorLexico tipo;
     private int fila;
     private int columna;
     
-    public ErrorLexico(String lexema, String descripcion,int fila,int columna){
+    public ErrorLexico(String lexema,TipoErrorLexico tipo,int fila,int columna){
         this.lexema = lexema;
-        this.descripcion = descripcion;
+        this.tipo = tipo;
         this.fila = fila;
         this.columna = columna;
         
@@ -26,9 +26,13 @@ public class ErrorLexico {
     public String getLexema() {
         return lexema;
     }
+    
+    public TipoErrorLexico getTipo() {
+        return tipo;
+    }
 
     public String getDescripcion() {
-        return descripcion;
+        return tipo.getDescripcion();
     }
 
     public int getFila() {
@@ -44,7 +48,7 @@ public class ErrorLexico {
 
     return "ErrorLexico{"
             + "lexema='" + lexema + '\''
-            + ", descripcion='" + descripcion + '\''
+            + ", tipo='" + tipo + '\''
             + ", fila=" + fila
             + ", columna=" + columna
             + '}';

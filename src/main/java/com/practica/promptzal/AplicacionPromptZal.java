@@ -9,13 +9,13 @@ package com.practica.promptzal;
  * @author wilian
  */
  
-import com.practica.promptzal.archivos.GestorArchivo;
-import com.practica.promptzal.lexer.AnalizadorLexico;
-import com.practica.promptzal.lexer.ErrorLexico;
-import com.practica.promptzal.lexer.Token;
+import com.practica.promptzal.Backend.archivos.GestorArchivo;
+import com.practica.promptzal.Backend.lexer.AnalizadorLexico;
+import com.practica.promptzal.Backend.lexer.ErrorLexico;
+import com.practica.promptzal.Backend.lexer.Token;
 
-import com.practica.promptzal.reporte.GeneradorReporteTokensHTML;
-import com.practica.promptzal.reporte.GenerarReporteErroresHTML;
+import com.practica.promptzal.Backend.reporte.GeneradorReporteTokensHTML;
+import com.practica.promptzal.Backend.reporte.GenerarReporteErroresHTML;
 
 import java.io.IOException;
 import java.nio.file.Path;
