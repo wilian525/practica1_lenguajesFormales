@@ -33,6 +33,18 @@ public class AnalizadorLexico {
        Q2_PUNTO_DECIMAL,
        Q3_DECIMAL
    }
+   
+   private enum EstadoDirectiva{
+       Q0,
+       Q1_ARROBA,
+       Q2_DIRECTIVA
+   }
+   
+   private enum EstadoCadena{
+       Q0,
+       Q1_CONTENIDO,
+       Q2_CERRAR
+   }
 
     public AnalizadorLexico(String entrada) {
 
@@ -209,56 +221,108 @@ public class AnalizadorLexico {
                        terminado = true;
                    }
                    break;
+                   
+               case Q1_ENTERO:
+                    if (esDigito(actual)) {
+                           lexema.append(actual);
+                           avanzar();
+                   } else if(actual == '.' && siguienteEsDigito()){
+                       lexema.append(actual);
+                       avanzar();
+                       estado = EstadoNumero.Q2_PUNTO_DECIMAL;
+                   } else {
+                       terminado = true;
+                   }
+                    break;
+               
+               case Q2_PUNTO_DECIMAL:
+
+                if (esDigito(actual)) {
+
+                    lexema.append(actual);
+                    avanzar();
+                    estado = EstadoNumero.Q3_DECIMAL;
+
+                } else {
+                    terminado = true;
+                }
+
+                break;
+
+            case Q3_DECIMAL:
+
+                if (esDigito(actual)) {
+                    lexema.append(actual);
+                    avanzar();
+
+                } else {
+                    terminado = true;
+                }
+
+                break;
+        }
+    }
+
+    if (estado == EstadoNumero.Q3_DECIMAL) {
+
+        agregarToken( lexema.toString(),TipoToken.DECIMAL, filaInicio,columnaInico);
+
+    } else {
+        agregarToken(lexema.toString(),TipoToken.ENTERO,filaInicio,columnaInico);
+    }
            }
-           
-           if (esDigito(actual)) {
-               lexema.append(actual);
-               avanzar();
-           } // solo acepta si : todavia no aparecio otro punto , despues del punto  viene un numero
-           else if(actual == '.' &&  !tieneDecimal && siguienteEsDigito()){
-               tieneDecimal = true;
-               lexema.append(actual);
-               avanzar();
-           }
-           else{
-               break;
-           }
-       }
        
-       if (tieneDecimal) {
-                agregarToken(lexema.toString(),TipoToken.DECIMAL,filaInicio,columnaInico);
-       }
-       else{
-           agregarToken(lexema.toString(),TipoToken.ENTERO,filaInicio,columnaInico);
-       }
-   }
+
         
      // reconoce las tres directivas 
 private void analizadorDirectivo(){
     int filaInicio = fila;
     int columnaInicio = columna;
     StringBuilder lexema = new StringBuilder();
-    lexema.append('@');
-    avanzar();
+    EstadoDirectiva estado = EstadoDirectiva.Q0;
+    boolean terminado = false;
     
-    while(posicion < entrada.length() ){
+    while (!terminado && posicion< entrada.length()){
        char actual = entrada.charAt(posicion);
        
-        if (esLetra(actual) || esDigito(actual) || actual == '_') {
-            lexema.append(actual);
-            avanzar();
-        }else{
-            break;
-        }
+       switch(estado){
+           case Q0:
+               if (actual == '@') {
+                   lexema.append(actual);
+                   avanzar();
+                   estado = EstadoDirectiva.Q1_ARROBA;
+               } else {
+                   terminado = true;
+                }
+               break;
+               
+           case Q1_ARROBA:
+               if (esLetra(actual)) {
+                    lexema.append(actual);
+                    avanzar();
+                    estado = EstadoDirectiva.Q2_DIRECTIVA;
+               } else {
+                   terminado = true;
+               }
+               break;
+               
+           case Q2_DIRECTIVA:
+               if (esLetra(actual) || esDigito(actual) || actual == '_') {
+                     lexema.append(actual);
+                     avanzar();
+               } else {
+                   terminado = true;
+               }
+               break;
+       }
     }
     String directiva = lexema.toString();
-    TipoToken tipo = palabrasEspeciales.get(directiva);
     
-    if (tipo == TipoToken.DIRECTIVA) {
-            agregarToken(directiva,TipoToken.DIRECTIVA,filaInicio,columnaInicio);
-    } else {
-        agregarError(directiva,"Directiva no reconocida",filaInicio,columnaInicio);
-    }
+    if (estado == EstadoDirectiva.Q2_DIRECTIVA && palabrasEspeciales.get(directiva) == TipoToken.DIRECTIVA) {
+         agregarToken(directiva,TipoToken.DIRECTIVA,filaInicio,columnaInicio);
+    } {
+    agregarError(directiva,TipoErrorLexico.DIRECTIVA_NO_RECONOCIDA,columnaInicio,filaInicio);
+} 
 }   
         
 // reconoce operadores
@@ -386,37 +450,49 @@ private void analizadorDirectivo(){
         int columnaInicio = columna;
         
         StringBuilder lexema = new StringBuilder();
-        boolean cerrada = false;
-        
-        //Guarda comillas iniciales
-        lexema.append('"');
-        avanzar();
-        
-        while(posicion < entrada.length()){
-            char actual = entrada.charAt(posicion);
-            
-            //Encontramos comillas de cierre
-            if (actual == '"') {
-                lexema.append('"');
-                avanzar();
-                
-                cerrada = true;
-                break;
-            }
-            
-            //si se llega a un salto de linea sin cerrar considera la cadena no cerrada
-            if (actual == '\n') {
-                break;
-            }
-            lexema.append(actual);
-            avanzar();
-        }
-        if (cerrada) {
-            agregarToken(lexema.toString(),TipoToken.CADENA,filaInicio,columnaInicio);
-            
-        }else{
-            agregarError(lexema.toString(),"Cadena sin cerrar",filaInicio,columnaInicio);
-        }
+        EstadoCadena estado = EstadoCadena.Q0;
+        boolean terminado = false;
+       
+         while(!terminado && posicion < entrada.length()){
+             char actual = entrada.charAt(posicion);
+             
+             switch(estado){
+                 
+                 case Q0:
+                     if (actual == '"') {
+                          lexema.append(actual);
+                          avanzar();
+                          estado = EstadoCadena.Q1_CONTENIDO;
+                     } else {
+                         terminado = true;
+                     }
+                     break;
+                     
+                 case Q1_CONTENIDO:
+                     if (actual == '"') {
+                         lexema.append(actual);
+                         avanzar();
+                         estado = EstadoCadena.Q2_CERRAR;
+                         terminado = true;
+                     } else if (actual == '\n'){
+                         terminado = true;
+                     } else {
+                         lexema.append(actual);
+                         avanzar();
+                     }
+                     break;
+                     
+                 case Q2_CERRAR:
+                     terminado = true;
+                     break;
+             }
+         }
+         
+         if (estado == EstadoCadena.Q2_CERRAR) {
+             agregarToken(lexema.toString(),TipoToken.CADENA,filaInicio,columnaInicio);
+        } else {
+             agregarError(lexema.toString(),TipoErrorLexico.CADENA_SIN_CERRAR,filaInicio,columnaInicio);
+         }
     }
     
     // guardar un nuevo token
