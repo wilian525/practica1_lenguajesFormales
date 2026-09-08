@@ -45,6 +45,31 @@ public class AnalizadorLexico {
        Q1_CONTENIDO,
        Q2_CERRAR
    }
+   
+   private enum EstadoComentarioLinea{
+       Q0,
+       Q1_BARRA,
+       Q2_COMENTARIO
+   }
+   
+   private enum EstadoComentarioBloque{
+       Q0,
+       Q1_BARRA,
+       Q2_CONTENIDO,
+       Q3_POSIBLE_CIERRE,
+       Q4_CERRADO
+   }
+   
+   private enum EstadoFlecha{
+       Q0,
+       Q1_GUION,
+       Q2_FLECHA
+   }
+   
+   private enum EstadoSimbolo{
+       Q0,
+       Q1_ACEPTADO;
+   }
 
     public AnalizadorLexico(String entrada) {
 
@@ -328,72 +353,72 @@ private void analizadorDirectivo(){
 // reconoce operadores
     private void analizadorSimbolo(){
         char actual = entrada.charAt(posicion);
-       
         int filaInicio = fila;
         int columnaInicio = columna;
         
-        switch(actual){
-            case '=':
-                 agregarToken("=",TipoToken.OPERADOR,filaInicio,columnaInicio);
-                 avanzar();
-                 break;
-              
-            case '+':
-                agregarToken("+",TipoToken.OPERADOR,filaInicio,columnaInicio);
-                avanzar();
-                break;
-                
-             case'{':
-                 agregarToken("{",TipoToken.DELIMITADOR,filaInicio,columnaInicio);
-                 avanzar();
-                 break;
-                 
-             case '}':
-                 agregarToken("}",TipoToken.DELIMITADOR,filaInicio,columnaInicio);
-                 avanzar();
-                 break;
-                 
-                 case '(':
-                agregarToken("(",TipoToken.DELIMITADOR, filaInicio,columnaInicio );
-                avanzar();
-                break;
-
-            case ')':
-                agregarToken( ")",TipoToken.DELIMITADOR,filaInicio, columnaInicio);
-                avanzar();
-                break;
-
-            case ',':
-                agregarToken( ",",TipoToken.DELIMITADOR, filaInicio, columnaInicio);
-                avanzar();
-                break;
-                
-                case';':
-                    agregarToken(";",TipoToken.DELIMITADOR,filaInicio,columnaInicio);
-                    avanzar();
-                    break;
-
-            case '-':
-                if (siguienteEs('>')) {
-                    agregarToken("->", TipoToken.CONECTOR,filaInicio,columnaInicio );
-
-                    // Consumimos -
-                    avanzar();
-
-                    // Consumimos >
-                    avanzar();
-
-                } else {
-                    agregarError( String.valueOf(actual),"Caracter no reconocido",filaInicio, columnaInicio);
-                    avanzar();
-                }
-                break;
-
-            default:
-                agregarError( String.valueOf(actual),"Caracter no reconocido", filaInicio, columnaInicio);
-                avanzar();
-                break;
+        if (actual == '-') {
+             analizarFlecha();
+             return ;
         }
+        EstadoSimbolo estado = EstadoSimbolo.Q0;
+        String lexema = "";
+        TipoToken tipo =  null;
+        
+        switch(estado){
+            case Q0:
+                switch(actual){
+                    case '=':
+                        lexema = "=";
+                        tipo = TipoToken.OPERADOR;
+                        estado = EstadoSimbolo.Q1_ACEPTADO;
+                        break;
+                        
+                     case'+':
+                            lexema = "+";
+                            tipo =TipoToken.OPERADOR;
+                            estado = EstadoSimbolo.Q1_ACEPTADO;
+                            break;
+                            
+                     case '}':
+                          lexema = "}";
+                          tipo = TipoToken.DELIMITADOR;
+                         estado = EstadoSimbolo.Q1_ACEPTADO;
+                         break;
+
+                    case '(':
+                          lexema = "(";
+                           tipo = TipoToken.DELIMITADOR;
+                          estado = EstadoSimbolo.Q1_ACEPTADO;
+                         break;
+
+                  case ')':
+                           lexema = ")";
+                              tipo = TipoToken.DELIMITADOR;
+                           estado = EstadoSimbolo.Q1_ACEPTADO;
+                           break;
+
+                     case ',':
+                          lexema = ",";
+                           tipo = TipoToken.DELIMITADOR;
+                          estado = EstadoSimbolo.Q1_ACEPTADO;
+                          break;
+
+                default:
+                    break;
+            }
+
+            break;
+
+        case Q1_ACEPTADO:
+            break;
+    }
+        if (estado == EstadoSimbolo.Q1_ACEPTADO) {
+             agregarToken(lexema,tipo,filaInicio,columnaInicio);
+             avanzar();
+        } else{
+            agregarError(String.valueOf(actual),TipoErrorLexico.CARACTER_NO_RECONOCIDO,filaInicio,columnaInicio);
+            avanzar();
+        }          
     }
     
     // Comprueba el caracter siguiente no mueve la posicion
@@ -511,36 +536,152 @@ private void analizadorDirectivo(){
     }
     
     private void ignorarComentarioLinea(){
-        // consumimos
-        avanzar();
-        avanzar();
-    
-        while(posicion < entrada.length()){
-            char actual = entrada.charAt(posicion);
-            if (actual == '\n') {
-                break;
-            }
-            avanzar();
+        EstadoComentarioLinea estado = EstadoComentarioLinea.Q0;
+        boolean terminado = false;
+        
+        while(!terminado && posicion  < entrada.length()){
+                char actual = entrada.charAt(posicion);
+                 switch(estado){
+                     case Q0:
+                         if (actual == '/') {
+                              avanzar();
+                              estado = EstadoComentarioLinea.Q1_BARRA;
+                         } else {
+                             terminado = true;
+                         }
+                         break;
+                         
+                     case Q1_BARRA:
+                         if (actual == '/') {
+                              avanzar();
+                              estado = EstadoComentarioLinea.Q2_COMENTARIO;
+                         } else {
+                             terminado = true;
+                         }
+                          break;
+                          
+                     case Q2_COMENTARIO:
+                         if (actual == '\n') {
+                              terminado = true;
+                         } else {
+                             avanzar();
+                         }
+                         break;
+                 }
         }
     }
     
     private void ignorarComentarioBloque(){
             int filaInicio = fila;
             int columnaInicio = columna;
-        
-        avanzar();
-        avanzar();
-        
-        while(posicion < entrada.length()){
-            if (entrada.charAt(posicion) == '*' && siguienteEs('/')) {
-                avanzar();
-                avanzar();
-                return;
+         
+            StringBuilder lexema = new StringBuilder();
+            EstadoComentarioBloque estado = EstadoComentarioBloque.Q0;
+            boolean terminado = false;
+            
+            while(!terminado && posicion < entrada.length()){
+                char actual = entrada.charAt(posicion);
+                
+                switch(estado){
+                    case Q0:
+                        if (actual == '/') {
+                             lexema.append(actual);
+                             avanzar();
+                             estado = EstadoComentarioBloque.Q1_BARRA;
+                        } else {
+                            terminado = true;
+                        }
+                        break;
+                        
+                    case Q1_BARRA:
+                        if (actual == '*') {
+                             lexema.append(actual);
+                             avanzar();
+                             estado = EstadoComentarioBloque.Q2_CONTENIDO;
+                        } else {
+                            terminado = true;
+                        }
+                        break;
+                        
+                    case Q2_CONTENIDO:
+                        if (actual == '*') {
+                             lexema.append(actual);
+                             avanzar();
+                             estado = EstadoComentarioBloque.Q3_POSIBLE_CIERRE;
+                        } else {
+                             lexema.append(actual);
+                             avanzar();
+                        }
+                         break;
+                         
+                    case Q3_POSIBLE_CIERRE:
+                        if (actual == '/') {
+                             lexema.append(actual);
+                             avanzar();
+                             estado = EstadoComentarioBloque.Q4_CERRADO;
+                             terminado = true;
+                        } else if(actual == '*'){
+                            lexema.append(actual);
+                            avanzar();
+                            estado = EstadoComentarioBloque.Q3_POSIBLE_CIERRE;
+                        } else {
+                            lexema.append(actual);
+                            avanzar();
+                            estado = EstadoComentarioBloque.Q2_CONTENIDO;
+                            }
+                        break;
+                        
+                    case Q4_CERRADO:
+                        terminado = true;
+                        break;
+                } 
             }
-            avanzar();
+            if (estado != EstadoComentarioBloque.Q4_CERRADO) {
+             agregarError(lexema.toString(),TipoErrorLexico.COMENTARIO_BLOQUE_SIN_CERRAR,filaInicio,columnaInicio);
         }
+    }
+    
+    private void analizarFlecha(){
+        int filaInicio = fila;
+        int columnaInicio = columna;
+        StringBuilder lexema = new StringBuilder();
         
-       // agregar error
+        EstadoFlecha estado = EstadoFlecha.Q0;
+        boolean terminado = false;
+        
+        while(!terminado && posicion < entrada.length()){
+            char actual = entrada.charAt(posicion);
+            switch(estado){
+                
+                case Q0:
+                    if (actual == '-') {
+                         lexema.append(actual);
+                         avanzar();
+                         estado = EstadoFlecha.Q1_GUION;
+                    } else {
+                        terminado = true;
+                    }
+                    break;
+                    
+                case Q1_GUION:
+                    if (actual == '>') {
+                         lexema.append(actual);
+                         avanzar();
+                         estado = EstadoFlecha.Q2_FLECHA;
+                    }
+                    terminado = true;
+                    break;
+                    
+                case Q2_FLECHA:
+                    terminado = true;
+                    break;
+            }
+        }
+        if (estado == EstadoFlecha.Q2_FLECHA) {
+             agregarToken(lexema.toString(),TipoToken.CONECTOR,filaInicio,columnaInicio);
+        } else {
+            agregarError(lexema.toString(), TipoErrorLexico.CARACTER_NO_RECONOCIDO,filaInicio,columnaInicio);
+        }
     }
 
     public Token[] getTokens() {
