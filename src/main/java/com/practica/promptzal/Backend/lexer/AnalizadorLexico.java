@@ -178,6 +178,7 @@ public class AnalizadorLexico {
              char actual = entrada.charAt(posicion);
              
              switch(estado){
+                 
                  case Q0:
                      if (esLetra(actual) || actual == '_') {
                          lexema.append(actual);
@@ -197,13 +198,6 @@ public class AnalizadorLexico {
                          terminado = true;
                      }
                      break;
-                }
-             
-             if (esLetra(actual) || esDigito(actual) || actual == '_') {
-                 lexema.append(actual);
-                 avanzar();
-             }else{
-             break;
          }
     }
     
@@ -230,7 +224,6 @@ public class AnalizadorLexico {
        StringBuilder lexema = new StringBuilder();
        EstadoNumero estado = EstadoNumero.Q0;
        boolean terminado = false;
-       boolean tieneDecimal = false;
        
        while(! terminado && posicion < entrada.length()){
            char actual = entrada.charAt(posicion);
@@ -345,7 +338,7 @@ private void analizadorDirectivo(){
     
     if (estado == EstadoDirectiva.Q2_DIRECTIVA && palabrasEspeciales.get(directiva) == TipoToken.DIRECTIVA) {
          agregarToken(directiva,TipoToken.DIRECTIVA,filaInicio,columnaInicio);
-    } {
+    } else {
     agregarError(directiva,TipoErrorLexico.DIRECTIVA_NO_RECONOCIDA,columnaInicio,filaInicio);
 } 
 }   
@@ -378,6 +371,12 @@ private void analizadorDirectivo(){
                             tipo =TipoToken.OPERADOR;
                             estado = EstadoSimbolo.Q1_ACEPTADO;
                             break;
+                            
+                     case'{':
+                         lexema = "{";
+                         tipo = TipoToken.DELIMITADOR;
+                         estado = EstadoSimbolo.Q1_ACEPTADO;
+                         break;
                             
                      case '}':
                           lexema = "}";
@@ -697,9 +696,18 @@ private void analizadorDirectivo(){
     }
 
     public int getCantidadErrores() {
-        return tokens.size();
+        return errores.size();
     }
     
+    public ArrayList<Token> getListaTokens() {
+
+    return tokens;
+}
+    
+    public ArrayList<ErrorLexico> getListaErrores() {
+
+    return errores;
+}
     
         }
     
