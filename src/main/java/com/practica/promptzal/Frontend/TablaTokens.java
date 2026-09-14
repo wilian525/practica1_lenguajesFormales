@@ -4,17 +4,72 @@
  */
 package com.practica.promptzal.Frontend;
 
+import com.practica.promptzal.Backend.lexer.Token;
+import java.util.List;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author wilian
  */
 public class TablaTokens extends javax.swing.JInternalFrame {
 
-    /**
-     * Creates new form TablaTokens
-     */
+   private DefaultTableModel modeloTabla;
+
     public TablaTokens() {
         initComponents();
+        configurarTabla();
+    }
+
+    private void configurarTabla() {
+
+        modeloTabla = new DefaultTableModel(
+                new Object[][]{},
+                new String[]{
+                    "No.",
+                    "Lexema",
+                    "Tipo",
+                    "Fila",
+                    "Columna"
+                }
+        ) {
+            @Override
+            public boolean isCellEditable(int fila, int columna) {
+                return false;
+            }
+        };
+
+        jTable1.setModel(modeloTabla);
+    }
+
+    public void cargarTokens(List<Token> tokens) {
+
+        modeloTabla.setRowCount(0);
+
+        if (tokens == null) {
+            return;
+        }
+
+        for (Token token : tokens) {
+
+            modeloTabla.addRow(new Object[]{
+                token.getNumero(),
+                token.getLexema(),
+                token.getTipo(),
+                token.getFila(),
+                token.getColumna()
+            });
+        }
+    }
+
+    public void limpiarTabla() {
+
+        modeloTabla.setRowCount(0);
+    }
+
+    public javax.swing.JTable getTabla() {
+
+        return jTable1;
     }
 
     /**
@@ -31,13 +86,13 @@ public class TablaTokens extends javax.swing.JInternalFrame {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null},
+                {null, null, null, null, null}
             },
             new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
+                "No", "Lexerma", "Tipo", " Fila", "Columna"
             }
         ));
         jScrollPane1.setViewportView(jTable1);

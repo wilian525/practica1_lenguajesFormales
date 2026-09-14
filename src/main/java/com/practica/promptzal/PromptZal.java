@@ -19,7 +19,7 @@ public class PromptZal {
 
         AplicacionPromptZal aplicacion = new AplicacionPromptZal();
 
-        aplicacion.iniciar();
+        
     
 }
 }

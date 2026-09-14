@@ -5,6 +5,7 @@
 package com.practica.promptzal.Backend.archivos;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -14,23 +15,65 @@ import java.nio.file.Path;
  */
 public class GestorArchivo {
     
-    public boolean esArchivoPz(String ruta){
-        if (ruta == null) {
+    public boolean esArchivoPz(Path ruta){
+        if (ruta == null  || ruta.getFileName() == null) {
             return false;
         }
+        String nombre = ruta.getFileName().toString().toLowerCase();
         return ruta.endsWith(".pz");
     }
     
-    public boolean existeArchivo(String ruta){
-        Path archivo = Path.of(ruta);
-        return Files.exists(archivo) && Files.isRegularFile(archivo);
+    public boolean existeArchivo(Path ruta){
+        return ruta != null && Files.exists(ruta) && Files.isRegularFile(ruta);
     }
     
-    public String leerArchivo(String ruta) throws IOException{
-        Path archivo = Path.of(ruta);
-        return Files.readString(archivo);
+    public String leerArchivo(Path ruta) throws IOException{
+          if (!existeArchivo(ruta)) {
+             throw new IOException("El archivo no existe.");
+        }
+         return Files.readString(ruta,StandardCharsets.UTF_8);
         }
     
+    public Path guardarArchivo(Path ruta,String contenido) throws IOException{
+         if (ruta == null) {
+             throw new IllegalArgumentException( "La ruta no puede ser nula." );
+        }
+         if (contenido == null) {
+               contenido = "";
+        }
+         Path rutaFinal = asegurarExtensionPz(ruta);
+         Path directorioPadre = rutaFinal.toAbsolutePath().normalize().getParent();
+         if (directorioPadre != null) {
+              Files.createDirectories(directorioPadre);
+        }
+         Files.writeString(rutaFinal, contenido, StandardCharsets.UTF_8);
+         return rutaFinal;
+    }
+    
+    public Path asegurarExtensionPz(Path ruta){
+        if (ruta ==  null) {
+               throw new IllegalArgumentException(
+                    "La ruta no puede ser nula."
+            );
+        }
+        String nombre = ruta.getFileName().toString();
+        if (nombre.toLowerCase().endsWith(".pz")) {
+             return ruta;
+        }
+        return ruta.resolveSibling(nombre + ".pz");
+    }
+    
+    public Path asegurarExtencionHTML(Path ruta){
+            if (ruta == null) {
+                throw new IllegalArgumentException("La ruta no puede ser nula.");
+        }
+            String nombre = ruta.getFileName().toString();
+            if (nombre.toLowerCase().endsWith(".html")) {
+              return ruta;
+        }
+            return ruta.resolveSibling(nombre + ".html");
+    }
+  
     public Path creerCarpetaReportes(String rutaArchivo) throws IOException{
         Path archivo = Path.of(rutaArchivo).toAbsolutePath().normalize();
         Path carpetaArchivo = archivo.getParent();
@@ -39,24 +82,15 @@ public class GestorArchivo {
         return carpetaReportes;
     }
     
-    public String obtenerNombreArchivo(String rutaArchivo){
-        Path archivo = Path.of(rutaArchivo);
-        String nombreCompleto = archivo.getFileName().toString();
-        
-        if (nombreCompleto.endsWith(".pz")) {
-            return nombreCompleto.substring(0,nombreCompleto.length() - 3);
+    public String obtenerNombreArchivo(Path ruta){
+         if (ruta == null || ruta.getFileName() == null) {
+              return "";
         }
-        return nombreCompleto;
-    }
-    
-    public Path obtenerRutaReporteTokens(String rutaArchivo,Path carpetaReportes){
-        String nombre = obtenerNombreArchivo(rutaArchivo);
-        return carpetaReportes.resolve(nombre + "_tokens.html");
-    }
-    
-    public Path obtenerRutaReporteErrores(String rutaArchivo, Path carpetaReporte){
-        String nombre = obtenerNombreArchivo(rutaArchivo);
-        return carpetaReporte.resolve(nombre + "_errores.html");
+        String nombre = ruta.getFileName().toString();
         
+        if (nombre.toLowerCase().endsWith(".pz")) {
+            return nombre.substring(0,nombre.length() - 3);
+        }
+        return nombre;
     }
 }
