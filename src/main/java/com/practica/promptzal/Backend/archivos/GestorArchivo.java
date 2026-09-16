@@ -20,7 +20,7 @@ public class GestorArchivo {
             return false;
         }
         String nombre = ruta.getFileName().toString().toLowerCase();
-        return ruta.endsWith(".pz");
+        return nombre.endsWith(".pz");
     }
     
     public boolean existeArchivo(Path ruta){

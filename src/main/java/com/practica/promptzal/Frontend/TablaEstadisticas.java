@@ -4,18 +4,86 @@
  */
 package com.practica.promptzal.Frontend;
 
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author wilian
  */
 public class TablaEstadisticas extends javax.swing.JInternalFrame {
 
-    /**
-     * Creates new form TablaEstadisticas
-     */
+   private DefaultTableModel modeloTabla;
+   
     public TablaEstadisticas() {
         initComponents();
+        configurarTabla();
     }
+    
+     private void configurarTabla() {
+
+        modeloTabla = new DefaultTableModel(
+                new Object[][]{},
+                new String[]{
+                    "Estadística",
+                    "Valor"
+                }
+        ) {
+            @Override
+            public boolean isCellEditable(int fila, int columna) {
+                return false;
+            }
+        };
+
+        jTable1.setModel(modeloTabla);
+    }
+
+    public void cargarEstadisticas(
+            int totalTokens,
+            int totalErrores,
+            int totalLineas) {
+
+        modeloTabla.setRowCount(0);
+
+        modeloTabla.addRow(new Object[]{
+            "Total de tokens",
+            totalTokens
+        });
+
+        modeloTabla.addRow(new Object[]{
+            "Total de errores",
+            totalErrores
+        });
+
+        modeloTabla.addRow(new Object[]{
+            "Total de líneas",
+            totalLineas
+        });
+    }
+
+    public void agregarEstadistica(
+            String nombre,
+            Object valor) {
+
+        if (nombre == null || nombre.isEmpty()) {
+            return;
+        }
+
+        modeloTabla.addRow(new Object[]{
+            nombre,
+            valor
+        });
+    }
+
+    public void limpiarTabla() {
+
+        modeloTabla.setRowCount(0);
+    }
+
+    public javax.swing.JTable getTabla() {
+
+        return jTable1;
+    }
+
 
     /**
      * This method is called from within the constructor to initialize the form.

@@ -4,6 +4,8 @@
 
 package com.practica.promptzal;
 
+import com.practica.promptzal.Frontend.ventanaPrincipal;
+
 
 /**
  *
@@ -17,8 +19,8 @@ public class PromptZal {
     public static void main(String[] args) {
     
 
-        AplicacionPromptZal aplicacion = new AplicacionPromptZal();
-
+      ventanaPrincipal pron = new ventanaPrincipal();
+      pron.setVisible(true);
         
     
 }
