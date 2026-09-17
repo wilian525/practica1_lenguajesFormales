@@ -105,70 +105,68 @@ public class GeneradorReporteTokensHTML {
     
     private String obtenerEstilos(){
         return """
-                    body{
-                               margin: 0;
-                               padding: 30px;
-                               front-family: Arial,Helvetica, sans-serif;
-                               background-color: #f4f6f8;
-                               color: #252525;
-                    }
-                    .contenedor {
-                              max-width: 1100px;
-                              margin: 0 auto;
-                              background-color: white;
-                              boder: 1px solid #d9dee3;
-                              boder-radius: 8px;
-                             overflow: hidden;
-                  }
-               
-                    header{
-                              background-color: #23364d;
-                              color: white;
-                              padding: 25px 30px;
-               }
-                    header h1{
-                                margin: 0;
-               }
-                    header p{
-                                margin: 6px 0 0;
-                                color: #dce4ed;
-               }
-                    .resumen{
-                                margin: 25px 30px 15px;
-                                padding: 14px;
-                                background-color: #edf2f7;
-                                border-left: 4px solid #3d5f82;
-               }
-                    table {
-                               width: calc(100% - 60px);
-                               margin: 20px 30px 30px;
-                               border-collapse: collapse;
-               }
-                    thead{
-                                background-color: #344f6b;
-                                color: white;
-               }
-                    th,
-                    td {
-                                padding: 11px 13px;
-                                border: 1px solid #d9dee3;
-                                text-align: left;
-               }
-               
-                    tbody tr:nth-child(even){
-                                background-color #f8fafc;
-               }
-                    .lexema{
-                                font-family: "Courier New", monospace;
-                                font-weight: bold;
-               }
-                    footer{
-                                padding: 18px;
-                                 background-color: #eef1f4;
-                                 text-align: center;
-                                 color: #626b73;
-               }
-               """;
+                  :root {
+                                     --acento: #3b82f6;
+                                     --fondo: #0f172a;
+                                     --panel: #16202f;
+                                     --texto: #e2e8f0;
+                                     --borde: #2b3b52;
+                                 }
+                                 body{
+                                            margin: 0;
+                                            padding: 30px;
+                                            font-family: Arial, Helvetica, sans-serif;
+                                            background-color: var(--fondo);
+                                            color: var(--texto);
+                                 }
+                                 .contenedor {
+                                           max-width: 1100px;
+                                           margin: 0 auto;
+                                           background-color: var(--panel);
+                                           border: 1px solid var(--borde);
+                                           border-radius: 8px;
+                                           overflow: hidden;
+                                 }
+                                 header{
+                                           background-color: #0b1220;
+                                           color: white;
+                                           padding: 25px 30px;
+                                 }
+                                 header h1{ margin: 0; }
+                                 header p{ margin: 6px 0 0; color: #9db3cc; }
+                                 .resumen{
+                                           margin: 25px 30px 15px;
+                                           padding: 14px;
+                                           background-color: #1e293b;
+                                           border-left: 4px solid var(--acento);
+                                 }
+                                 table {
+                                           width: calc(100% - 60px);
+                                           margin: 20px 30px 30px;
+                                           border-collapse: collapse;
+                                 }
+                                 thead{
+                                           background-color: var(--acento);
+                                           color: white;
+                                 }
+                                 th, td {
+                                           padding: 11px 13px;
+                                           border: 1px solid var(--borde);
+                                           text-align: left;
+                                 }
+                                 tbody tr:nth-child(even){ background-color: #1b2635; }
+                                 .lexema{
+                                           font-family: "Courier New", monospace;
+                                           font-weight: bold;
+                                           color: #f1f5f9;
+                                 }
+                                 footer{
+                                           padding: 18px;
+                                           background-color: #0b1220;
+                                           text-align: center;
+                                           color: #7c8ba1;
+                                 }
+                                 """;
     }
     
     private String escaparHTML(String texto){

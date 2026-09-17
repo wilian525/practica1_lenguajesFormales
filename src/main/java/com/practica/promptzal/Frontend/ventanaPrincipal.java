@@ -8,19 +8,23 @@ import javax.swing.JDesktopPane;
 import com.practica.promptzal.Backend.archivos.GestorArchivo;
 import com.practica.promptzal.Backend.lexer.AnalizadorLexico;
 import com.practica.promptzal.Backend.lexer.ErrorLexico;
+import com.practica.promptzal.Backend.lexer.GeneradorDOT;
 import com.practica.promptzal.Backend.lexer.TipoToken;
 import com.practica.promptzal.Backend.lexer.Token;
+import com.practica.promptzal.Backend.reporte.GeneradorReporteEstadisticasHTML;
 import com.practica.promptzal.Backend.reporte.GeneradorReporteTokensHTML;
 import com.practica.promptzal.Backend.reporte.GenerarReporteErroresHTML;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -28,6 +32,8 @@ import javax.swing.JDesktopPane;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
@@ -51,6 +57,8 @@ public class ventanaPrincipal extends javax.swing.JFrame {
     private TablaEstadisticas tablaEstadisticas;
 
     private JDesktopPane escritorio;
+    private JTextArea editor;
+    private Path rutaImagenAFD;
 
     public ventanaPrincipal() {
 
@@ -111,6 +119,46 @@ public class ventanaPrincipal extends javax.swing.JFrame {
         jLabelTokens.setText("Tokens: 0");
         jLabelErroes.setText("Errores: 0");
         jLabelLineas.setText("Lineas: 0");
+
+        configurarEditor();
+
+        setTitle("PROMPTZAL - ANALIZADOR LEXICO");
+        setLocationRelativeTo(null);
+    }
+
+    private void configurarEditor() {
+
+        editor = new JTextArea();
+
+        editor.setFont(
+                new Font("Monospaced", Font.PLAIN, 14)
+        );
+
+        editor.setTabSize(4);
+
+        JScrollPane scrollEditor
+                = new JScrollPane(editor);
+
+        /*
+     * El JFileChooser que estaba dibujado en el panel
+     * se sustituye por el editor.
+         */
+        jPanel2.removeAll();
+
+        jPanel2.setLayout(new BorderLayout());
+
+        jLabel3.setText("ARCHIVO .PZ");
+
+        jPanel2.add(jLabel3, BorderLayout.NORTH);
+
+        jPanel2.add(scrollEditor, BorderLayout.CENTER);
+
+        jPanel2.setPreferredSize(
+                new Dimension(400, 420)
+        );
+
+        jPanel2.revalidate();
+        jPanel2.repaint();
     }
 
     private void configurarVentana() {
@@ -310,6 +358,8 @@ public class ventanaPrincipal extends javax.swing.JFrame {
                 .addGap(21, 21, 21))
         );
 
+        jPanel2.setBackground(new java.awt.Color(204, 255, 204));
+
         jLabel3.setText("ARCHIVO .PZ");
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -336,10 +386,14 @@ public class ventanaPrincipal extends javax.swing.JFrame {
                 .addGap(14, 14, 14))
         );
 
-        jButtonCargarAFD.setText("Cargar AFD.svg");
+        jButtonCargarAFD.setText("construir AFD");
         jButtonCargarAFD.addActionListener(this::jButtonCargarAFDActionPerformed);
 
+        jLabel2.setFont(new java.awt.Font("Bitstream Vera Serif", 3, 18)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(204, 0, 51));
         jLabel2.setText("AUTOMATA FINITO DETERMINISTICO");
+
+        JpanelMonstrarAutomata.setBackground(new java.awt.Color(0, 51, 51));
 
         javax.swing.GroupLayout JpanelMonstrarAutomataLayout = new javax.swing.GroupLayout(JpanelMonstrarAutomata);
         JpanelMonstrarAutomata.setLayout(JpanelMonstrarAutomataLayout);
@@ -395,6 +449,9 @@ public class ventanaPrincipal extends javax.swing.JFrame {
 
         jLabelLineas.setText("Lineas");
 
+        jButtonExportarHTML.setBackground(new java.awt.Color(255, 102, 102));
+        jButtonExportarHTML.setFont(new java.awt.Font("FantasqueSansM Nerd Font Propo", 3, 14)); // NOI18N
+        jButtonExportarHTML.setForeground(new java.awt.Color(51, 51, 51));
         jButtonExportarHTML.setText("ExportarHTML");
         jButtonExportarHTML.addActionListener(this::jButtonExportarHTMLActionPerformed);
 
@@ -453,12 +510,12 @@ public class ventanaPrincipal extends javax.swing.JFrame {
                                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 913, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jFileChooser3, javax.swing.GroupLayout.PREFERRED_SIZE, 379, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(14, 14, 14))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addComponent(jButtonExportarHTML, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(136, 136, 136))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jFileChooser3, javax.swing.GroupLayout.PREFERRED_SIZE, 379, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(14, 14, 14))))))
+                                .addGap(127, 127, 127))))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -486,7 +543,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 348, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 25, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(jLabelTokens)
@@ -538,6 +595,8 @@ public class ventanaPrincipal extends javax.swing.JFrame {
 
             rutaArchivoActual = ruta;
 
+            editor.setText(contenidoArchivo);
+            editor.setCaretPosition(0);
             /*
          * Cada archivo nuevo necesita un análisis nuevo.
              */
@@ -775,73 +834,141 @@ public class ventanaPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_jRadioButtonEstadisticasActionPerformed
 
     private void jButtonCargarAFDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCargarAFDActionPerformed
-        JFileChooser selector = new JFileChooser();
 
-        selector.setDialogTitle(
-                "Seleccionar AFD"
-        );
+        GeneradorDOT generador = new GeneradorDOT();
 
-        selector.setFileFilter(
-                new FileNameExtensionFilter(
-                        "Imagen SVG (*.svg)",
-                        "svg"
-                )
-        );
+        /*
+         * La imagen se guarda junto al archivo .pz si existe,
+         * y si no, en la carpeta del usuario.
+         */
+        Path carpetaSalida;
 
-        int resultado
-                = selector.showOpenDialog(this);
+        if (rutaArchivoActual != null
+                && rutaArchivoActual.getParent() != null) {
 
-        if (resultado != JFileChooser.APPROVE_OPTION) {
-            return;
+            carpetaSalida
+                    = rutaArchivoActual.getParent().resolve("afd");
+
+        } else {
+
+            carpetaSalida
+                    = Path.of(System.getProperty("user.home"))
+                            .resolve("PromptZal")
+                            .resolve("afd");
         }
 
-        File archivo
-                = selector.getSelectedFile();
+        try {
 
-        /*
-     * Guardamos la ruta del SVG.
-         */
-        String rutaSvg
-                = archivo.getAbsolutePath();
+            Set<String> estadosUsados = generador.determinarEstadosUsados(
+        analizadorLexico.getTokens(),
+        analizadorLexico.getCantidadTokens(),
+        analizadorLexico.getErrores(),
+        analizadorLexico.getCantidadErrores(),
+        analizadorLexico.getContComentariosLinea(),
+        analizadorLexico.getContComentariosBloqueCerrados()
+);
 
-        /*
-     * ImageIcon no renderiza SVG de forma nativa
-     * en Swing. Por eso comprobamos primero si
-     * el sistema puede cargarlo.
-         */
-        ImageIcon icono
-                = new ImageIcon(rutaSvg);
+String nombreBase = (rutaArchivoActual != null)
+        ? rutaArchivoActual.getFileName().toString().replace(".pz", "")
+        : "sin_guardar";
 
-        if (icono.getIconWidth() <= 0) {
+         Path rutaPng = generador.generarTodo(carpetaSalida, nombreBase, estadosUsados);
+
+            rutaImagenAFD = rutaPng;
+
+            mostrarImagenAFD(rutaPng);
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Swing no pudo renderizar directamente "
-                    + "el archivo SVG.\n"
-                    + "La generación/renderizado del AFD "
-                    + "se conectará con Graphviz.",
-                    "SVG seleccionado",
+                    "AFD generado correctamente.\n\n"
+                    + "Imagen: " + rutaPng + "\n"
+                    + "Codigo DOT: "
+                    + carpetaSalida.resolve("afd_promptzal.dot"),
+                    "Automata finito deterministico",
                     JOptionPane.INFORMATION_MESSAGE
+            );
+
+        } catch (IOException e) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "No se pudo generar la imagen del AFD:\n\n"
+                    + e.getMessage(),
+                    "Graphviz",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }                                                
+
+    /**
+     * Coloca la imagen del AFD dentro del panel, escalada para que quepa sin
+     * deformarse.
+     */
+    private void mostrarImagenAFD(Path rutaPng) {
+
+        ImageIcon original
+                = new ImageIcon(rutaPng.toString());
+
+        if (original.getIconWidth() <= 0) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "La imagen del AFD se genero pero no se pudo "
+                    + "cargar en la interfaz.",
+                    "Imagen",
+                    JOptionPane.WARNING_MESSAGE
             );
 
             return;
         }
 
-        JLabel imagen
-                = new JLabel(icono);
+        int anchoPanel = JpanelMonstrarAutomata.getWidth();
+        int altoPanel = JpanelMonstrarAutomata.getHeight();
 
-        imagen.setHorizontalAlignment(
-                JLabel.CENTER
-        );
+        if (anchoPanel <= 0) {
+            anchoPanel = 700;
+        }
+
+        if (altoPanel <= 0) {
+            altoPanel = 340;
+        }
+
+        double escalaAncho
+                = (double) anchoPanel / original.getIconWidth();
+
+        double escalaAlto
+                = (double) altoPanel / original.getIconHeight();
+
+        double escala = Math.min(escalaAncho, escalaAlto);
+
+        if (escala > 1) {
+            escala = 1;
+        }
+
+        int nuevoAncho
+                = (int) (original.getIconWidth() * escala);
+
+        int nuevoAlto
+                = (int) (original.getIconHeight() * escala);
+
+        Image imagenEscalada
+                = original.getImage().getScaledInstance(
+                        nuevoAncho,
+                        nuevoAlto,
+                        Image.SCALE_SMOOTH
+                );
+
+        JLabel etiquetaImagen
+                = new JLabel(new ImageIcon(imagenEscalada));
+
+        etiquetaImagen.setHorizontalAlignment(JLabel.CENTER);
 
         JpanelMonstrarAutomata.removeAll();
 
-        JpanelMonstrarAutomata.setLayout(
-                new BorderLayout()
-        );
+        JpanelMonstrarAutomata.setLayout(new BorderLayout());
 
         JpanelMonstrarAutomata.add(
-                imagen,
+                new JScrollPane(etiquetaImagen),
                 BorderLayout.CENTER
         );
 
@@ -959,73 +1086,23 @@ public class ventanaPrincipal extends javax.swing.JFrame {
 
             } else {
 
-                /*
-             * Generamos por ahora el contenido de estadísticas
-             * directamente desde la información del analizador.
-                 */
-                StringBuilder html
-                        = new StringBuilder();
+                GeneradorReporteEstadisticasHTML generador
+                        = new GeneradorReporteEstadisticasHTML();
 
-                html.append("<!DOCTYPE html>");
-                html.append("<html>");
-                html.append("<head>");
-                html.append("<meta charset='UTF-8'>");
-                html.append("<title>Estadísticas PromptZal</title>");
-                html.append("</head>");
-                html.append("<body>");
-
-                html.append("<h1>Estadísticas del análisis</h1>");
-
-                html.append("<table border='1'>");
-
-                html.append("<tr>");
-                html.append("<th>Estadística</th>");
-                html.append("<th>Valor</th>");
-                html.append("</tr>");
-
-                html.append("<tr>");
-                html.append("<td>Total de tokens</td>");
-                html.append("<td>")
-                        .append(
-                                analizadorLexico.getCantidadTokens()
-                        )
-                        .append("</td>");
-                html.append("</tr>");
-
-                html.append("<tr>");
-                html.append("<td>Total de errores</td>");
-                html.append("<td>")
-                        .append(
-                                analizadorLexico.getCantidadErrores()
-                        )
-                        .append("</td>");
-                html.append("</tr>");
-
-                html.append("<tr>");
-                html.append("<td>Total de líneas</td>");
-                html.append("<td>")
-                        .append(
-                                contarLineas(contenidoArchivo)
-                        )
-                        .append("</td>");
-                html.append("</tr>");
-
-                html.append("</table>");
-
-                html.append("</body>");
-                html.append("</html>");
-
-                java.nio.file.Files.writeString(
-                        ruta,
-                        html.toString(),
-                        java.nio.charset.StandardCharsets.UTF_8
+                generador.generar(
+                        analizadorLexico.getTokens(),
+                        analizadorLexico.getCantidadTokens(),
+                        analizadorLexico.getCantidadErrores(),
+                        contarLineas(contenidoArchivo),
+                        ruta.toString()
                 );
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "Reporte de estadísticas generado correctamente:\n"
+                        "Reporte de estadisticas generado correctamente:\n"
                         + ruta
                 );
+
             }
 
         } catch (Exception e) {
@@ -1167,12 +1244,15 @@ public class ventanaPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonGuardarPzActionPerformed
 
     private void jButtonAnalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAnalizarActionPerformed
-        if (rutaArchivoActual == null) {
+        contenidoArchivo = editor.getText();
+
+        if (contenidoArchivo == null
+                || contenidoArchivo.trim().isEmpty()) {
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Primero debe abrir un archivo .pz.",
-                    "Sin archivo",
+                    "El editor esta vacio. Escriba o abra un archivo .pz.",
+                    "Sin contenido",
                     JOptionPane.WARNING_MESSAGE
             );
 
@@ -1189,10 +1269,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
          *
          * Abrir -> Guardar -> Analizar
              */
-            contenidoArchivo
-                    = gestorArchivo.leerArchivo(rutaArchivoActual);
-
-            /*
+ /*
          * Creamos un nuevo analizador con el contenido
          * actual del archivo.
              */
@@ -1272,16 +1349,6 @@ public class ventanaPrincipal extends javax.swing.JFrame {
                     "Análisis terminado correctamente.",
                     "Análisis",
                     JOptionPane.INFORMATION_MESSAGE
-            );
-
-        } catch (IOException e) {
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "No se pudo leer el archivo .pz:\n"
-                    + e.getMessage(),
-                    "Error de lectura",
-                    JOptionPane.ERROR_MESSAGE
             );
 
         } catch (Exception e) {

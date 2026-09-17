@@ -19,6 +19,8 @@ public class AnalizadorLexico {
     private int fila;
     private int columna;
     private int numeroToken;
+    private int contComentariosLinea;
+private int contComentariosBloqueCerrados;
 
    private ArrayList<Token> tokens;
    private ArrayList<ErrorLexico> errores;
@@ -80,6 +82,8 @@ public class AnalizadorLexico {
     this.fila = 1;
     this.columna = 1;
     this.numeroToken = 1;
+    this.contComentariosLinea = 0;
+    this.contComentariosBloqueCerrados = 0;
 
     this.tokens = new ArrayList<>();
     this.errores = new ArrayList<>();
@@ -340,7 +344,7 @@ private void analizadorDirectivo(){
     if (estado == EstadoDirectiva.Q2_DIRECTIVA && palabrasEspeciales.get(directiva) == TipoToken.DIRECTIVA) {
          agregarToken(directiva,TipoToken.DIRECTIVA,filaInicio,columnaInicio);
     } else {
-    agregarError(directiva,TipoErrorLexico.DIRECTIVA_NO_RECONOCIDA,columnaInicio,filaInicio);
+    agregarError(directiva,TipoErrorLexico.DIRECTIVA_NO_RECONOCIDA,filaInicio,columnaInicio);
 } 
 }   
         
@@ -555,6 +559,7 @@ private void analizadorDirectivo(){
                          if (actual == '/') {
                               avanzar();
                               estado = EstadoComentarioLinea.Q2_COMENTARIO;
+                              contComentariosLinea++; 
                          } else {
                              terminado = true;
                          }
@@ -638,7 +643,9 @@ private void analizadorDirectivo(){
             }
             if (estado != EstadoComentarioBloque.Q4_CERRADO) {
              agregarError(lexema.toString(),TipoErrorLexico.COMENTARIO_BLOQUE_SIN_CERRAR,filaInicio,columnaInicio);
-        }
+        } else {
+               contComentariosBloqueCerrados++;
+            }
     }
     
     private void analizarFlecha(){
@@ -709,6 +716,16 @@ private void analizadorDirectivo(){
 
     return errores;
 }
+
+    public int getContComentariosLinea() {
+        return contComentariosLinea;
+    }
+
+    public int getContComentariosBloqueCerrados() {
+        return contComentariosBloqueCerrados;
+    }
+    
+    
     
         }
     

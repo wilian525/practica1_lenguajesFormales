@@ -10,7 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
-
+import java.util.LinkedHashSet;
+import java.util.Set;
 /**
  *
  * @author wilian
@@ -184,6 +185,128 @@ public class GeneradorDOT {
 
         return afd;
     }
+    
+    public Set<String> determinarEstadosUsados(
+        Token[] tokens,
+        int cantidadTokens,
+        ErrorLexico[] errores,
+        int cantidadErrores,
+        int comentariosLinea,
+        int comentariosBloqueCerrados) {
+
+    Set<String> usados = new LinkedHashSet<>();
+    usados.add("q0");
+
+    for (int i = 0; i < cantidadTokens; i++) {
+
+        Token token = tokens[i];
+        if (token == null) {
+            continue;
+        }
+
+        String lexema = token.getLexema();
+        if (lexema == null) {
+            lexema = "";
+        }
+
+        switch (token.getTipo()) {
+
+            case DIRECTIVA:
+                usados.add("q5");
+                usados.add("q6");
+                break;
+
+            case CADENA:
+                usados.add("q7");
+                usados.add("q8");
+                break;
+
+            case ENTERO:
+                usados.add("q2");
+                break;
+
+            case DECIMAL:
+                usados.add("q2");
+                usados.add("q3");
+                usados.add("q4");
+                break;
+
+            case OPERADOR:
+                usados.add("q17");
+                break;
+
+            case DELIMITADOR:
+                usados.add("q18");
+                break;
+
+            case RESERVADA:
+            case COMANDO_IA:
+            case IDENTIFICADOR:
+            case FUNCION:
+                usados.add("q1");
+                break;
+
+            case CONECTOR:
+                if (lexema.equals("->")) {
+                    usados.add("q15");
+                    usados.add("q16");
+                } else {
+                    usados.add("q1");
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    if (comentariosLinea > 0) {
+        usados.add("q9");
+        usados.add("q10");
+        usados.add("q11");
+    }
+
+    if (comentariosBloqueCerrados > 0) {
+        usados.add("q9");
+        usados.add("q12");
+        usados.add("q13");
+        usados.add("q14");
+    }
+
+    for (int i = 0; i < cantidadErrores; i++) {
+
+        ErrorLexico error = errores[i];
+        if (error == null) {
+            continue;
+        }
+
+        switch (error.getTipo()) {
+
+            case CADENA_SIN_CERRAR:
+                usados.add("q7");
+                usados.add("q20");
+                break;
+
+            case COMENTARIO_BLOQUE_SIN_CERRAR:
+                usados.add("q9");
+                usados.add("q12");
+                usados.add("q13");
+                break;
+
+            case DIRECTIVA_NO_RECONOCIDA:
+                usados.add("q5");
+                usados.add("q6");
+                break;
+
+            case CARACTER_NO_RECONOCIDO:
+            default:
+                usados.add("q19");
+                break;
+        }
+    }
+
+    return usados;
+}
 
     // generar dto 
     public String generarCodigoDOT(
@@ -288,6 +411,81 @@ public class GeneradorDOT {
         return dot.toString();
     }
 
+    public String generarCodigoDOT(
+        AutomataFinitoDeterministico afd,
+        Set<String> estadosUsados) {
+
+    if (afd == null) {
+        return "";
+    }
+    if (estadosUsados == null || estadosUsados.isEmpty()) {
+        return generarCodigoDOT(afd);
+    }
+
+    StringBuilder dot = new StringBuilder();
+
+    dot.append("digraph AFD_PromptZal {\n");
+    dot.append("    rankdir=LR;\n");
+    dot.append("    bgcolor=\"white\";\n");
+    dot.append("    fontname=\"Helvetica\";\n");
+    dot.append("    labelloc=\"t\";\n");
+    dot.append("    label=\"AFD recorrido para este archivo\";\n");
+    dot.append("    fontsize=20;\n");
+    dot.append("    node [fontname=\"Helvetica\", fontsize=10];\n");
+    dot.append("    edge [fontname=\"Helvetica\", fontsize=9];\n\n");
+    dot.append("    inicio [shape=point, width=0.12];\n");
+
+    for (EstadoAFD estado : afd.getEstados()) {
+
+        String nombre = estado.getNombre();
+        if (!estadosUsados.contains(nombre)) {
+            continue;
+        }
+
+        String etiqueta = nombre;
+        if (tokenDeEstado.containsKey(nombre)) {
+            etiqueta = nombre + "\\n" + tokenDeEstado.get(nombre);
+        }
+
+        dot.append("    ").append(nombre)
+           .append(" [label=\"").append(escaparDOT(etiqueta)).append("\"");
+
+        dot.append(afd.esEstadoAceptacion(estado) ? ", shape=doublecircle" : ", shape=circle");
+
+        if (estadosDeError.containsKey(nombre)) {
+            dot.append(", style=filled, fillcolor=\"#f6c6c6\", color=\"#a33a3a\"");
+        } else if (afd.esEstadoAceptacion(estado)) {
+            dot.append(", style=filled, fillcolor=\"#cde9d3\", color=\"#2e6639\"");
+        } else if (estado == afd.getEstadoInicial()) {
+            dot.append(", style=filled, fillcolor=\"#d6e4f5\", color=\"#23364d\"");
+        }
+
+        dot.append("];\n");
+    }
+
+    dot.append("\n");
+
+    if (afd.getEstadoInicial() != null
+            && estadosUsados.contains(afd.getEstadoInicial().getNombre())) {
+        dot.append("    inicio -> ").append(afd.getEstadoInicial().getNombre()).append(";\n\n");
+    }
+
+    for (TransicionAFD transicion : afd.getTransiciones()) {
+
+        String origen = transicion.getEstadoOrigen().getNombre();
+        String destino = transicion.getEstadoDestino().getNombre();
+
+        if (!estadosUsados.contains(origen) || !estadosUsados.contains(destino)) {
+            continue;
+        }
+
+        dot.append("    ").append(origen).append(" -> ").append(destino)
+           .append(" [label=\"").append(escaparDOT(transicion.getSimbolo())).append("\"];\n");
+    }
+
+    dot.append("}\n");
+    return dot.toString();
+}
     /**
      * Escapa los caracteres que DOT interpreta de forma especial.
      */
@@ -422,41 +620,55 @@ public class GeneradorDOT {
     }
 
     // Construye el AFD, escribe el .dot y genera el .png
-    public Path generarTodo(Path carpetaSalida) throws IOException {
+    public Path generarTodo(Path carpetaSalida,  String nombreBase, Set<String> estadosUsados) throws IOException {
 
-        if (carpetaSalida == null) {
+      
+    if (carpetaSalida == null) {
+        carpetaSalida = Path.of(System.getProperty("user.home"));
+    }
 
-            carpetaSalida
-                    = Path.of(System.getProperty("user.home"));
-        }
+    Files.createDirectories(carpetaSalida);
 
-        Files.createDirectories(carpetaSalida);
+    String base = (nombreBase == null || nombreBase.isBlank())
+            ? "archivo"
+            : nombreBase.replaceAll("[^A-Za-z0-9_\\-]", "_");
 
-        AutomataFinitoDeterministico afd
-                = construirAutomata();
+    AutomataFinitoDeterministico afd = construirAutomata();
 
-        String codigo = generarCodigoDOT(afd);
+    String codigoCompleto = generarCodigoDOT(afd);
 
-        Path rutaDot
-                = carpetaSalida.resolve("afd_promptzal.dot");
+    Path rutaDotCompleto
+            = carpetaSalida.resolve("afd_promptzal_completo.dot");
 
-        Path rutaPng
-                = carpetaSalida.resolve("afd_promptzal.png");
+    Path rutaPngCompleto
+            = carpetaSalida.resolve("afd_promptzal_completo.png");
 
-        guardarCodigoDOT(codigo, rutaDot);
+    guardarCodigoDOT(codigoCompleto, rutaDotCompleto);
 
-        if (!graphvizDisponible()) {
+    String codigoRecorrido = generarCodigoDOT(afd, estadosUsados);
 
-            throw new IOException(
-                    "No se encontro Graphviz (comando 'dot').\n"
-                    + "El codigo DOT si se guardo en:\n"
-                    + rutaDot
-            );
-        }
+    Path rutaDotRecorrido
+            = carpetaSalida.resolve("afd_" + base + "_recorrido.dot");
 
-        generarImagen(rutaDot, rutaPng);
+    Path rutaPngRecorrido
+            = carpetaSalida.resolve("afd_" + base + "_recorrido.png");
 
-        return rutaPng;
+    guardarCodigoDOT(codigoRecorrido, rutaDotRecorrido);
+
+    if (!graphvizDisponible()) {
+
+        throw new IOException(
+                "No se encontro Graphviz (comando 'dot') en el PATH.\n"
+                + "El codigo DOT si se guardo en:\n"
+                + rutaDotCompleto + "\n"
+                + rutaDotRecorrido
+        );
+    }
+
+    generarImagen(rutaDotCompleto, rutaPngCompleto);
+    generarImagen(rutaDotRecorrido, rutaPngRecorrido);
+
+    return rutaPngRecorrido;
     }
 
     public AutomataFinitoDeterministico getAutomata() {
