@@ -386,6 +386,8 @@ public class ventanaPrincipal extends javax.swing.JFrame {
                 .addGap(14, 14, 14))
         );
 
+        jButtonCargarAFD.setBackground(new java.awt.Color(255, 204, 0));
+        jButtonCargarAFD.setForeground(new java.awt.Color(0, 0, 0));
         jButtonCargarAFD.setText("construir AFD");
         jButtonCargarAFD.addActionListener(this::jButtonCargarAFDActionPerformed);
 
