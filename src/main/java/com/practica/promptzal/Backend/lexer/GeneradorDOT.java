@@ -173,7 +173,7 @@ public class GeneradorDOT {
         /*
          * Operadores y delimitadores
          */
-        afd.agregarTransicion(q0, "= | +", q17);
+        afd.agregarTransicion(q0, "= | + | #", q17);
         afd.agregarTransicion(q0, "{ | } | ( | ) | ,", q18);
 
         /*

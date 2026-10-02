@@ -377,6 +377,12 @@ private void analizadorDirectivo(){
                             estado = EstadoSimbolo.Q1_ACEPTADO;
                             break;
                             
+                            case'#':
+                                lexema = "#";
+                                tipo = TipoToken.OPERADOR;
+                                estado = EstadoSimbolo.Q1_ACEPTADO;
+                                break;
+                            
                      case'{':
                          lexema = "{";
                          tipo = TipoToken.DELIMITADOR;
