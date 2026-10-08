@@ -9,24 +9,34 @@ package com.practica.promptzal.Backend.lexer;
  * @author wilian
  */
 public enum TipoToken {
-    
-     DIRECTIVA("Directiva"),
-    RESERVADA("Palabra reservada"),
+
+    DIRECTIVA("Directiva"),
+    AGENTE("Agente"),
+    CONTEXTO("Contexto"),
+    VARIABLE("Variable"),
+    EJECUTAR("Ejecutar"),
+    EXPORTAR("Exportar"),
     COMANDO_IA("Comando de IA"),
+    CARGAR("Funcion del sistema"),
     CONECTOR("Conector"),
-    IDENTIFICADOR("Identificador"),
+    FLECHA("Flecha"),
+    IGUAL("Asignacion"),
+    MAS("Concatenacion"),
+    LLAVE_A("Llave de apertura"),
+    LLAVE_C("Llave de cierre"),
+    PAR_A("Parentesis de apertura"),
+    PAR_C("Parentesis de cierre"),
+    COMA("Coma"),
+    ID("Identificador"),
     CADENA("Literal de cadena"),
-    ENTERO("Literal entero"),
-    DECIMAL("Literal decimal"),
-    OPERADOR("Operador"),
-    DELIMITADOR("Delimitador"),
-    FUNCION("Funcion");
-    
+    NUMERO("Literal numerico"),
+    EOF("Fin de archivo");
+
     private final String descripcion;
-    
-     private TipoToken(String descripcion){
-         this.descripcion = descripcion;
-     }
+
+    private TipoToken(String descripcion) {
+        this.descripcion = descripcion;
+    }
 
     public String getDescripcion() {
         return descripcion;

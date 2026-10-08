@@ -4,16 +4,16 @@
  */
 package com.practica.promptzal.Frontend;
 
-import javax.swing.JDesktopPane;
 import com.practica.promptzal.Backend.archivos.GestorArchivo;
-import com.practica.promptzal.Backend.lexer.AnalizadorLexico;
 import com.practica.promptzal.Backend.lexer.ErrorLexico;
-import com.practica.promptzal.Backend.lexer.GeneradorDOT;
 import com.practica.promptzal.Backend.lexer.TipoToken;
 import com.practica.promptzal.Backend.lexer.Token;
 import com.practica.promptzal.Backend.reporte.GeneradorReporteEstadisticasHTML;
 import com.practica.promptzal.Backend.reporte.GeneradorReporteTokensHTML;
 import com.practica.promptzal.Backend.reporte.GenerarReporteErroresHTML;
+import com.practica.promptzal.Backend.lexer.Lexer;
+import java.io.StringReader;
+import java.util.ArrayList;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -46,7 +46,8 @@ public class ventanaPrincipal extends javax.swing.JFrame {
 
     private GestorArchivo gestorArchivo;
 
-    private AnalizadorLexico analizadorLexico;
+    private ArrayList<Token> tokensLexicos;
+    private ArrayList<ErrorLexico> erroresLexicos;
 
     private Path rutaArchivoActual;
 
@@ -68,7 +69,8 @@ public class ventanaPrincipal extends javax.swing.JFrame {
 
         contenidoArchivo = "";
         rutaArchivoActual = null;
-        analizadorLexico = null;
+        tokensLexicos = null;
+        erroresLexicos = null;
 
         /*
      * Los JFileChooser están colocados visualmente
@@ -602,7 +604,8 @@ public class ventanaPrincipal extends javax.swing.JFrame {
             /*
          * Cada archivo nuevo necesita un análisis nuevo.
              */
-            analizadorLexico = null;
+            tokensLexicos = null;
+            erroresLexicos = null;
 
             /*
          * Limpiamos resultados anteriores.
@@ -649,7 +652,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonAbrirPzActionPerformed
 
     private void jRadioButtonTokensActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButtonTokensActionPerformed
-        if (analizadorLexico == null) {
+        if (tokensLexicos == null) {
 
             JOptionPane.showMessageDialog(
                     this,
@@ -692,7 +695,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_jRadioButtonTokensActionPerformed
 
     private void jRadioButtonErroesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButtonErroesActionPerformed
-        if (analizadorLexico == null) {
+        if (erroresLexicos == null) {
 
             JOptionPane.showMessageDialog(
                     this,
@@ -735,7 +738,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_jRadioButtonErroesActionPerformed
 
     private void jRadioButtonEstadisticasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButtonEstadisticasActionPerformed
-        if (analizadorLexico == null) {
+        if (tokensLexicos == null || erroresLexicos == null) {
 
             JOptionPane.showMessageDialog(
                     this,
@@ -755,14 +758,9 @@ public class ventanaPrincipal extends javax.swing.JFrame {
 
         tablaEstadisticas.limpiarTabla();
 
-        int totalTokens
-                = analizadorLexico.getCantidadTokens();
-
-        int totalErrores
-                = analizadorLexico.getCantidadErrores();
-
-        int totalLineas
-                = contarLineas(contenidoArchivo);
+        int totalTokens = tokensLexicos.size();
+        int totalErrores = erroresLexicos.size();
+        int totalLineas = contarLineas(contenidoArchivo);
 
         tablaEstadisticas.cargarEstadisticas(
                 totalTokens,
@@ -770,9 +768,6 @@ public class ventanaPrincipal extends javax.swing.JFrame {
                 totalLineas
         );
 
-        /*
-     * Frecuencia de cada tipo de token.
-         */
         EnumMap<TipoToken, Integer> frecuencias
                 = new EnumMap<>(TipoToken.class);
 
@@ -780,30 +775,19 @@ public class ventanaPrincipal extends javax.swing.JFrame {
             frecuencias.put(tipo, 0);
         }
 
-        Token[] tokens
-                = analizadorLexico.getTokens();
+        for (Token token : tokensLexicos) {
+            TipoToken tipo = token.getTipo();
 
-        for (int i = 0;
-                i < analizadorLexico.getCantidadTokens();
-                i++) {
-
-            if (tokens[i] != null) {
-
-                TipoToken tipo
-                        = tokens[i].getTipo();
-
-                frecuencias.put(
-                        tipo,
-                        frecuencias.get(tipo) + 1
-                );
-            }
+            frecuencias.put(
+                    tipo,
+                    frecuencias.get(tipo) + 1
+            );
         }
 
         for (Map.Entry<TipoToken, Integer> entrada
                 : frecuencias.entrySet()) {
 
             if (entrada.getValue() > 0) {
-
                 tablaEstadisticas.agregarEstadistica(
                         entrada.getKey().toString(),
                         entrada.getValue()
@@ -813,10 +797,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
 
         escritorio.add(tablaEstadisticas);
 
-        tablaEstadisticas.setLocation(
-                20,
-                20
-        );
+        tablaEstadisticas.setLocation(20, 20);
 
         tablaEstadisticas.setSize(
                 escritorio.getWidth() - 40,
@@ -836,150 +817,16 @@ public class ventanaPrincipal extends javax.swing.JFrame {
     }//GEN-LAST:event_jRadioButtonEstadisticasActionPerformed
 
     private void jButtonCargarAFDActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCargarAFDActionPerformed
-
-        GeneradorDOT generador = new GeneradorDOT();
-
-        /*
-         * La imagen se guarda junto al archivo .pz si existe,
-         * y si no, en la carpeta del usuario.
-         */
-        Path carpetaSalida;
-
-        if (rutaArchivoActual != null
-                && rutaArchivoActual.getParent() != null) {
-
-            carpetaSalida
-                    = rutaArchivoActual.getParent().resolve("afd");
-
-        } else {
-
-            carpetaSalida
-                    = Path.of(System.getProperty("user.home"))
-                            .resolve("PromptZal")
-                            .resolve("afd");
-        }
-
-        try {
-
-            Set<String> estadosUsados = generador.determinarEstadosUsados(
-        analizadorLexico.getTokens(),
-        analizadorLexico.getCantidadTokens(),
-        analizadorLexico.getErrores(),
-        analizadorLexico.getCantidadErrores(),
-        analizadorLexico.getContComentariosLinea(),
-        analizadorLexico.getContComentariosBloqueCerrados()
-);
-
-String nombreBase = (rutaArchivoActual != null)
-        ? rutaArchivoActual.getFileName().toString().replace(".pz", "")
-        : "sin_guardar";
-
-         Path rutaPng = generador.generarTodo(carpetaSalida, nombreBase, estadosUsados);
-
-            rutaImagenAFD = rutaPng;
-
-            mostrarImagenAFD(rutaPng);
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "AFD generado correctamente.\n\n"
-                    + "Imagen: " + rutaPng + "\n"
-                    + "Codigo DOT: "
-                    + carpetaSalida.resolve("afd_promptzal.dot"),
-                    "Automata finito deterministico",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-
-        } catch (IOException e) {
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "No se pudo generar la imagen del AFD:\n\n"
-                    + e.getMessage(),
-                    "Graphviz",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        }
-    }                                                
-
-    /**
-     * Coloca la imagen del AFD dentro del panel, escalada para que quepa sin
-     * deformarse.
-     */
-    private void mostrarImagenAFD(Path rutaPng) {
-
-        ImageIcon original
-                = new ImageIcon(rutaPng.toString());
-
-        if (original.getIconWidth() <= 0) {
-
-            JOptionPane.showMessageDialog(
-                    this,
-                    "La imagen del AFD se genero pero no se pudo "
-                    + "cargar en la interfaz.",
-                    "Imagen",
-                    JOptionPane.WARNING_MESSAGE
-            );
-
-            return;
-        }
-
-        int anchoPanel = JpanelMonstrarAutomata.getWidth();
-        int altoPanel = JpanelMonstrarAutomata.getHeight();
-
-        if (anchoPanel <= 0) {
-            anchoPanel = 700;
-        }
-
-        if (altoPanel <= 0) {
-            altoPanel = 340;
-        }
-
-        double escalaAncho
-                = (double) anchoPanel / original.getIconWidth();
-
-        double escalaAlto
-                = (double) altoPanel / original.getIconHeight();
-
-        double escala = Math.min(escalaAncho, escalaAlto);
-
-        if (escala > 1) {
-            escala = 1;
-        }
-
-        int nuevoAncho
-                = (int) (original.getIconWidth() * escala);
-
-        int nuevoAlto
-                = (int) (original.getIconHeight() * escala);
-
-        Image imagenEscalada
-                = original.getImage().getScaledInstance(
-                        nuevoAncho,
-                        nuevoAlto,
-                        Image.SCALE_SMOOTH
-                );
-
-        JLabel etiquetaImagen
-                = new JLabel(new ImageIcon(imagenEscalada));
-
-        etiquetaImagen.setHorizontalAlignment(JLabel.CENTER);
-
-        JpanelMonstrarAutomata.removeAll();
-
-        JpanelMonstrarAutomata.setLayout(new BorderLayout());
-
-        JpanelMonstrarAutomata.add(
-                new JScrollPane(etiquetaImagen),
-                BorderLayout.CENTER
+        JOptionPane.showMessageDialog(
+                this,
+                "El analizador lexico del Proyecto 2 se genera con JFlex.",
+                "JFlex",
+                JOptionPane.INFORMATION_MESSAGE
         );
-
-        JpanelMonstrarAutomata.revalidate();
-        JpanelMonstrarAutomata.repaint();
     }//GEN-LAST:event_jButtonCargarAFDActionPerformed
 
     private void jButtonExportarHTMLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonExportarHTMLActionPerformed
-        if (analizadorLexico == null) {
+        if (tokensLexicos == null || erroresLexicos == null) {
 
             JOptionPane.showMessageDialog(
                     this,
@@ -1057,9 +904,12 @@ String nombreBase = (rutaArchivoActual != null)
                 GeneradorReporteTokensHTML generador
                         = new GeneradorReporteTokensHTML();
 
+                Token[] arregloTokens
+                        = tokensLexicos.toArray(new Token[0]);
+
                 generador.generar(
-                        analizadorLexico.getTokens(),
-                        analizadorLexico.getCantidadTokens(),
+                        arregloTokens,
+                        arregloTokens.length,
                         ruta.toString()
                 );
 
@@ -1074,9 +924,12 @@ String nombreBase = (rutaArchivoActual != null)
                 GenerarReporteErroresHTML generador
                         = new GenerarReporteErroresHTML();
 
+                ErrorLexico[] arregloErrores
+                        = erroresLexicos.toArray(new ErrorLexico[0]);
+
                 generador.generar(
-                        analizadorLexico.getErrores(),
-                        analizadorLexico.getCantidadErrores(),
+                        arregloErrores,
+                        arregloErrores.length,
                         ruta.toString()
                 );
 
@@ -1091,10 +944,13 @@ String nombreBase = (rutaArchivoActual != null)
                 GeneradorReporteEstadisticasHTML generador
                         = new GeneradorReporteEstadisticasHTML();
 
+                Token[] arregloTokens
+                        = tokensLexicos.toArray(new Token[0]);
+
                 generador.generar(
-                        analizadorLexico.getTokens(),
-                        analizadorLexico.getCantidadTokens(),
-                        analizadorLexico.getCantidadErrores(),
+                        arregloTokens,
+                        arregloTokens.length,
+                        erroresLexicos.size(),
                         contarLineas(contenidoArchivo),
                         ruta.toString()
                 );
@@ -1120,75 +976,53 @@ String nombreBase = (rutaArchivoActual != null)
     }//GEN-LAST:event_jButtonExportarHTMLActionPerformed
 
     private void jButtonNuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonNuevoActionPerformed
-        int respuesta
-                = JOptionPane.showConfirmDialog(
-                        this,
-                        "¿Desea crear un nuevo archivo?",
-                        "Nuevo archivo",
-                        JOptionPane.YES_NO_OPTION
-                );
+        int respuesta = JOptionPane.showConfirmDialog(
+                this,
+                "¿Desea crear un nuevo archivo?",
+                "Nuevo archivo",
+                JOptionPane.YES_NO_OPTION
+        );
 
         if (respuesta != JOptionPane.YES_OPTION) {
             return;
         }
 
         contenidoArchivo = "";
-
         rutaArchivoActual = null;
 
-        analizadorLexico = null;
+        tokensLexicos = null;
+        erroresLexicos = null;
 
-        /*
-     * Limpiamos las tres tablas.
-         */
+        editor.setText("");
+
         tablaTokens.limpiarTabla();
         tablaErroes.limpiarTabla();
         tablaEstadisticas.limpiarTabla();
 
-        /*
-     * Quitamos las ventanas internas.
-         */
         escritorio.removeAll();
         escritorio.repaint();
 
-        /*
-     * Limpiamos el AFD.
-         */
         JpanelMonstrarAutomata.removeAll();
         JpanelMonstrarAutomata.revalidate();
         JpanelMonstrarAutomata.repaint();
 
-        /*
-     * Reiniciamos los indicadores.
-         */
         jLabelTokens.setText("Tokens: 0");
         jLabelErroes.setText("Errores: 0");
         jLabelLineas.setText("Lineas: 0");
 
-        /*
-     * Todavía no hay reportes que exportar.
-         */
         jButtonExportarHTML.setEnabled(false);
 
-        /*
-     * Deseleccionamos visualmente los radios.
-         */
         jRadioButtonTokens.setSelected(false);
         jRadioButtonErroes.setSelected(false);
         jRadioButtonEstadisticas.setSelected(false);
     }//GEN-LAST:event_jButtonNuevoActionPerformed
 
     private void jButtonGuardarPzActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonGuardarPzActionPerformed
-        if (contenidoArchivo == null) {
-            contenidoArchivo = "";
-        }
+        contenidoArchivo = editor.getText();
 
-        JFileChooser selector
-                = new JFileChooser();
+        JFileChooser selector = new JFileChooser();
 
-        selector.setDialogTitle(
-                "Guardar archivo PromptZal"
-        );
+        selector.setDialogTitle("Guardar archivo PromptZal");
 
         selector.setFileFilter(
                 new FileNameExtensionFilter(
@@ -1198,47 +1032,36 @@ String nombreBase = (rutaArchivoActual != null)
         );
 
         if (rutaArchivoActual != null) {
-
-            selector.setSelectedFile(
-                    rutaArchivoActual.toFile()
-            );
+            selector.setSelectedFile(rutaArchivoActual.toFile());
         }
 
-        int resultado
-                = selector.showSaveDialog(this);
+        int resultado = selector.showSaveDialog(this);
 
         if (resultado != JFileChooser.APPROVE_OPTION) {
             return;
         }
 
-        Path ruta
-                = selector.getSelectedFile().toPath();
+        Path ruta = selector.getSelectedFile().toPath();
 
         try {
+            Path rutaFinal = gestorArchivo.guardarArchivo(
+                    ruta,
+                    contenidoArchivo
+            );
 
-            Path rutaFinal
-                    = gestorArchivo.guardarArchivo(
-                            ruta,
-                            contenidoArchivo
-                    );
-
-            rutaArchivoActual
-                    = rutaFinal;
+            rutaArchivoActual = rutaFinal;
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Archivo guardado correctamente:\n"
-                    + rutaFinal,
+                    "Archivo guardado correctamente:\n" + rutaFinal,
                     "Guardar",
                     JOptionPane.INFORMATION_MESSAGE
             );
 
         } catch (IOException e) {
-
             JOptionPane.showMessageDialog(
                     this,
-                    "No se pudo guardar el archivo:\n"
-                    + e.getMessage(),
+                    "No se pudo guardar el archivo:\n" + e.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE
             );
@@ -1262,102 +1085,67 @@ String nombreBase = (rutaArchivoActual != null)
         }
 
         try {
-
-            /*
-         * Volvemos a leer el archivo que está actualmente
-         * seleccionado.
-         *
-         * Esto permite que el flujo sea:
-         *
-         * Abrir -> Guardar -> Analizar
-             */
- /*
-         * Creamos un nuevo analizador con el contenido
-         * actual del archivo.
-             */
-            analizadorLexico
-                    = new AnalizadorLexico(
-                            contenidoArchivo
-                    );
-
-            /*
-         * Ejecutamos el análisis léxico.
-             */
-            analizadorLexico.analizar();
-
-            /*
-         * Obtenemos las cantidades.
-             */
-            int cantidadTokens
-                    = analizadorLexico.getCantidadTokens();
-
-            int cantidadErrores
-                    = analizadorLexico.getCantidadErrores();
-
-            /*
-         * Cargamos la tabla de tokens.
-             */
-            tablaTokens.cargarTokens(
-                    analizadorLexico.getListaTokens()
+            Lexer lexer = new Lexer(
+                    new StringReader(contenidoArchivo)
             );
 
-            /*
-         * Cargamos la tabla de errores.
-             */
+            tokensLexicos = new ArrayList<>();
+
+            Token token;
+
+            do {
+                token = lexer.yylex();
+                tokensLexicos.add(token);
+
+            } while (token.getTipo() != TipoToken.EOF);
+
+            erroresLexicos = lexer.getErrores();
+
+            tablaTokens.cargarTokens(tokensLexicos);
+
+            ErrorLexico[] arregloErrores
+                    = erroresLexicos.toArray(new ErrorLexico[0]);
+
             tablaErroes.cargarErrores(
-                    analizadorLexico.getErrores(),
-                    cantidadErrores
+                    arregloErrores,
+                    erroresLexicos.size()
             );
 
-            /*
-         * Cargamos las estadísticas generales.
-             */
             tablaEstadisticas.cargarEstadisticas(
-                    cantidadTokens,
-                    cantidadErrores,
+                    tokensLexicos.size(),
+                    erroresLexicos.size(),
                     contarLineas(contenidoArchivo)
             );
 
-            /*
-         * Actualizamos los contadores de la ventana.
-             */
             jLabelTokens.setText(
-                    "Tokens: " + cantidadTokens
+                    "Tokens: " + tokensLexicos.size()
             );
 
             jLabelErroes.setText(
-                    "Errores: " + cantidadErrores
+                    "Errores: " + erroresLexicos.size()
             );
 
             jLabelLineas.setText(
-                    "Lineas: "
-                    + contarLineas(contenidoArchivo)
+                    "Lineas: " + contarLineas(contenidoArchivo)
             );
 
-            /*
-         * Ya existen resultados.
-             */
             jButtonExportarHTML.setEnabled(true);
 
-            /*
-         * Mostramos automáticamente la tabla de tokens.
-             */
             jRadioButtonTokens.setSelected(true);
 
             jRadioButtonTokensActionPerformed(null);
 
             JOptionPane.showMessageDialog(
                     this,
-                    "Análisis terminado correctamente.",
-                    "Análisis",
+                    "Analisis lexico terminado correctamente.",
+                    "Analisis",
                     JOptionPane.INFORMATION_MESSAGE
             );
 
-        } catch (Exception e) {
-
+        } catch (IOException e) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Ocurrió un error durante el análisis:\n"
+                    "Ocurrio un error durante el analisis lexico:\n"
                     + e.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE
