@@ -11,11 +11,11 @@ import java.util.ArrayList;
  * @author wilian
  */
 public class Programa {
-    
+
     private ArrayList<Directiva> directivas;
     private ArrayList<Agente> agentes;
-    private ArrayList<String> ejecuciones;
-    private ArrayList<String> exportaciones;
+    private ArrayList<Ejecucion> ejecuciones;
+    private ArrayList<Exportacion> exportaciones;
 
     public Programa() {
         directivas = new ArrayList<>();
@@ -32,12 +32,12 @@ public class Programa {
         agentes.add(agente);
     }
 
-    public void agregarEjecucion(String nombreAgente) {
-        ejecuciones.add(nombreAgente);
+    public void agregarEjecucion(Ejecucion ejecucion) {
+        ejecuciones.add(ejecucion);
     }
 
-    public void agregarExportacion(String nombreVariable) {
-        exportaciones.add(nombreVariable);
+    public void agregarExportacion(Exportacion exportacion) {
+        exportaciones.add(exportacion);
     }
 
     public ArrayList<Directiva> getDirectivas() {
@@ -48,12 +48,12 @@ public class Programa {
         return agentes;
     }
 
-    public ArrayList<String> getEjecuciones() {
+    public ArrayList<Ejecucion> getEjecuciones() {
         return ejecuciones;
     }
 
-    public ArrayList<String> getExportaciones() {
+    public ArrayList<Exportacion> getExportaciones() {
         return exportaciones;
     }
-    
+
 }
