@@ -17,21 +17,26 @@ import java.util.ArrayList;
 import com.practica.promptzal.Backend.reporte.GeneradorReporteSimbolos;
 import com.practica.promptzal.Backend.reporte.GenerarReporteErroresHTML;
 import com.practica.promptzal.Backend.reporte.GeneradorReporteAST;
+import com.practica.promptzal.Backend.reporte.GeneradorReporteTokensHTML;
+import com.practica.promptzal.Backend.reporte.GeneradorReporteEstadisticasHTML;
 
 public class PruebaParser {
 
     public static void main(String[] args) {
         String codigo = """
-        @modelo "gpt"
-        $
+        @modelo "claude-sonnet-4-6"
+        @rol "analista de datos"
+        @formato "markdown"
 
         AGENTE analista {
-            contexto "Falta el igual"
-            PREGUNTAR "Analiza los datos" SOBRE ventas -> resultado
+            contexto = "Eres un analista de datos experto"
+            variable ventas = CARGAR("ventas.csv")
+            PREGUNTAR "Cuales son las tendencias?" SOBRE ventas -> tendencias
+            RESUMIR tendencias EN 100 palabras -> resumen
         }
 
-        EJECUTAR fantasma
-        EXPORTAR resultado
+        EJECUTAR analista
+        EXPORTAR resumen
         """;
 
         probar(codigo);
@@ -61,6 +66,31 @@ public class PruebaParser {
                         + actual.getFila()
                         + " columna: "
                         + actual.getColumna()
+                );
+            }
+
+            GeneradorReporteTokensHTML reporteTokens
+                    = new GeneradorReporteTokensHTML();
+
+            boolean reporteTokensGenerado
+                    = reporteTokens.generar(tokens);
+
+            System.out.println();
+            System.out.println("REPORTE DE TOKENS");
+            System.out.println("----------------");
+
+            if (reporteTokensGenerado) {
+                System.out.println(
+                        "Reporte de tokens generado correctamente."
+                );
+
+                System.out.println(
+                        "Ruta: "
+                        + reporteTokens.getRutaReporte()
+                );
+            } else {
+                System.out.println(
+                        "No se pudo generar el reporte de tokens."
                 );
             }
 
@@ -122,6 +152,37 @@ public class PruebaParser {
                     parser.getErrores(),
                     semantico.getErrores()
             );
+
+            GeneradorReporteEstadisticasHTML reporteEstadisticas
+                    = new GeneradorReporteEstadisticasHTML();
+
+            boolean reporteEstadisticasGenerado
+                    = reporteEstadisticas.generar(
+                            tokens,
+                            lexer.getErrores(),
+                            parser.getErrores(),
+                            semantico.getErrores(),
+                            codigo
+                    );
+
+            System.out.println();
+            System.out.println("REPORTE DE ESTADISTICAS");
+            System.out.println("----------------");
+
+            if (reporteEstadisticasGenerado) {
+                System.out.println(
+                        "Reporte de estadisticas generado correctamente."
+                );
+
+                System.out.println(
+                        "Ruta: "
+                        + reporteEstadisticas.getRutaReporte()
+                );
+            } else {
+                System.out.println(
+                        "No se pudo generar el reporte de estadisticas."
+                );
+            }
 
             System.out.println();
             System.out.println("REPORTE DE ERRORES");

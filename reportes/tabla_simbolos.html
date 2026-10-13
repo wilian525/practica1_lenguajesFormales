@@ -505,7 +505,7 @@ footer {
 <div class="resumen">
 <div class="tarjeta">
 <span>Total de simbolos</span>
-<strong>2</strong>
+<strong>4</strong>
 </div>
 <div class="tarjeta tarjeta-agentes">
 <span>Agentes</span>
@@ -513,11 +513,11 @@ footer {
 </div>
 <div class="tarjeta tarjeta-variables">
 <span>Variables declaradas</span>
-<strong>0</strong>
+<strong>1</strong>
 </div>
 <div class="tarjeta tarjeta-resultados">
 <span>Resultados de comandos</span>
-<strong>1</strong>
+<strong>2</strong>
 </div>
 </div>
 <div class="herramientas">
@@ -530,7 +530,7 @@ footer {
 <option value="RESULTADO_COMANDO">Resultados de comandos</option>
 </select>
 </div>
-<div id="contadorVisibles" class="contador">2 simbolos visibles</div>
+<div id="contadorVisibles" class="contador">4 simbolos visibles</div>
 </div>
 <div class="contenedor-tabla">
 <table>
@@ -544,23 +544,41 @@ footer {
 </tr>
 </thead>
 <tbody id="cuerpoSimbolos">
-<tr class="fila-simbolo" data-tipo="AGENTE" data-linea="4">
+<tr class="fila-simbolo" data-tipo="AGENTE" data-linea="5">
 <td class="numero">1</td>
 <td class="nombre-simbolo">analista</td>
 <td>
 <span class="badge tipo-agente">AGENTE</span>
 </td>
 <td class="ambito">GLOBAL</td>
-<td class="linea">4</td>
+<td class="linea">5</td>
 </tr>
-<tr class="fila-simbolo" data-tipo="RESULTADO_COMANDO" data-linea="6">
+<tr class="fila-simbolo" data-tipo="VARIABLE_DECLARADA" data-linea="7">
 <td class="numero">2</td>
-<td class="nombre-simbolo">resultado</td>
+<td class="nombre-simbolo">ventas</td>
+<td>
+<span class="badge tipo-variable">VARIABLE</span>
+</td>
+<td class="ambito">analista</td>
+<td class="linea">7</td>
+</tr>
+<tr class="fila-simbolo" data-tipo="RESULTADO_COMANDO" data-linea="8">
+<td class="numero">3</td>
+<td class="nombre-simbolo">tendencias</td>
 <td>
 <span class="badge tipo-resultado">RESULTADO</span>
 </td>
 <td class="ambito">analista</td>
-<td class="linea">6</td>
+<td class="linea">8</td>
+</tr>
+<tr class="fila-simbolo" data-tipo="RESULTADO_COMANDO" data-linea="9">
+<td class="numero">4</td>
+<td class="nombre-simbolo">resumen</td>
+<td>
+<span class="badge tipo-resultado">RESULTADO</span>
+</td>
+<td class="ambito">analista</td>
+<td class="linea">9</td>
 </tr>
 </tbody>
 </table>

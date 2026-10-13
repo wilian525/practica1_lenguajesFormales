@@ -4,13 +4,22 @@
  */
 package com.practica.promptzal.Backend.reporte;
 
+import com.practica.promptzal.Backend.lexer.ErrorLexico;
 import com.practica.promptzal.Backend.lexer.TipoToken;
 import com.practica.promptzal.Backend.lexer.Token;
+import com.practica.promptzal.Backend.parser.ErrorSintactico;
+import com.practica.promptzal.Backend.reporte.estiloReporte.ReporteEstadisticasEstilo;
+import com.practica.promptzal.Backend.semantico.ErrorSemantico;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -19,253 +28,667 @@ import java.util.Map;
  */
 public class GeneradorReporteEstadisticasHTML {
 
-    public void generar(
-            Token[] tokens,
-            int cantidadTokens,
-            int cantidadErrores,
-            int cantidadLineas,
-            String rutaSalida) {
+    private String rutaCarpeta;
+    private String rutaReporte;
+    private ReporteEstadisticasEstilo estilo;
 
-        /*
-         * Frecuencia de cada tipo de token.
-         */
-        EnumMap<TipoToken, Integer> frecuencias
-                = new EnumMap<>(TipoToken.class);
+    public GeneradorReporteEstadisticasHTML() {
+        rutaCarpeta = "reportes";
+        rutaReporte = rutaCarpeta + "/reporte_estadisticas.html";
+        estilo = new ReporteEstadisticasEstilo();
+    }
 
-        for (TipoToken tipo : TipoToken.values()) {
-            frecuencias.put(tipo, 0);
+    public boolean generar(
+            ArrayList<Token> tokens,
+            ArrayList<ErrorLexico> erroresLexicos,
+            ArrayList<ErrorSintactico> erroresSintacticos,
+            ArrayList<ErrorSemantico> erroresSemanticos,
+            String codigoFuente) {
+
+        if (tokens == null
+                || erroresLexicos == null
+                || erroresSintacticos == null
+                || erroresSemanticos == null
+                || codigoFuente == null) {
+
+            return false;
         }
 
-        for (int i = 0; i < cantidadTokens; i++) {
+        crearCarpeta();
 
-            if (tokens[i] != null) {
+        String contenido = construirHTML(
+                tokens,
+                erroresLexicos,
+                erroresSintacticos,
+                erroresSemanticos,
+                codigoFuente
+        );
 
-                TipoToken tipo = tokens[i].getTipo();
+        try (BufferedWriter escritor
+                = new BufferedWriter(
+                        new FileWriter(rutaReporte)
+                )) {
 
-                frecuencias.put(
-                        tipo,
-                        frecuencias.get(tipo) + 1
-                );
-            }
+            escritor.write(contenido);
+            return true;
+
+        } catch (IOException e) {
+
+            System.out.println(
+                    "Error al generar el reporte de estadisticas: "
+                    + e.getMessage()
+            );
+
+            return false;
         }
+    }
+
+    private void crearCarpeta() {
+        File carpeta = new File(rutaCarpeta);
+
+        if (!carpeta.exists()) {
+            carpeta.mkdirs();
+        }
+    }
+
+    private String construirHTML(
+            ArrayList<Token> tokens,
+            ArrayList<ErrorLexico> erroresLexicos,
+            ArrayList<ErrorSintactico> erroresSintacticos,
+            ArrayList<ErrorSemantico> erroresSemanticos,
+            String codigoFuente) {
 
         StringBuilder html = new StringBuilder();
 
-        html.append("<!DOCTYPE html>");
-        html.append("<html lang=\"es\">");
+        int totalTokens = tokens.size();
 
-        html.append("<head>");
-        html.append("<meta charset=\"UTF-8\">");
-        html.append("<title>Reporte de Estadisticas - PromptZal</title>");
-        html.append("<style>");
-        html.append(obtenerEstilos());
-        html.append("</style>");
-        html.append("</head>");
+        int tiposUtilizados
+                = contarTiposUtilizados(tokens);
 
-        html.append("<body>");
-        html.append("<div class=\"contenedor\">");
+        int totalLineas
+                = contarLineas(codigoFuente);
 
-        html.append("<header>");
-        html.append("<h1>PromptZal</h1>");
-        html.append("<p>Reporte de Estadisticas</p>");
-        html.append("</header>");
+        int totalLexicos
+                = erroresLexicos.size();
 
-        /*
-         * Tarjetas con los totales.
-         */
-        html.append("<div class=\"tarjetas\">");
+        int totalSintacticos
+                = erroresSintacticos.size();
 
-        html.append(crearTarjeta("Total de tokens", cantidadTokens));
-        html.append(crearTarjeta("Total de errores", cantidadErrores));
-        html.append(crearTarjeta("Total de lineas", cantidadLineas));
+        int totalSemanticos
+                = erroresSemanticos.size();
 
-        html.append("</div>");
+        int totalErrores
+                = totalLexicos
+                + totalSintacticos
+                + totalSemanticos;
 
-        /*
-         * Tabla de frecuencias.
-         */
-        html.append("<table>");
+        html.append("<!DOCTYPE html>\n");
+        html.append("<html lang=\"es\">\n");
 
-        html.append("<thead>");
-        html.append("<tr>");
-        html.append("<th>No.</th>");
-        html.append("<th>Tipo de token</th>");
-        html.append("<th>Frecuencia</th>");
-        html.append("<th>Porcentaje</th>");
-        html.append("</tr>");
-        html.append("</thead>");
+        agregarHead(html);
 
-        html.append("<tbody>");
+        html.append("<body>\n");
+        html.append("<main class=\"contenedor\">\n");
 
-        int numero = 1;
+        agregarEncabezado(html);
 
-        for (Map.Entry<TipoToken, Integer> entrada
-                : frecuencias.entrySet()) {
+        html.append("<section class=\"contenido\">\n");
 
-            if (entrada.getValue() == 0) {
-                continue;
-            }
+        agregarResumen(
+                html,
+                totalTokens,
+                tiposUtilizados,
+                totalLineas,
+                totalErrores
+        );
 
-            double porcentaje = 0;
+        agregarFrecuencias(
+                html,
+                tokens,
+                totalTokens
+        );
 
-            if (cantidadTokens > 0) {
+        agregarResumenCompilacion(
+                html,
+                totalTokens,
+                tiposUtilizados,
+                totalLineas,
+                totalLexicos,
+                totalSintacticos,
+                totalSemanticos,
+                totalErrores
+        );
 
+        html.append("</section>\n");
+
+        agregarPie(html);
+
+        html.append("</main>\n");
+
+        html.append("<script>\n");
+        html.append(estilo.getJavaScript());
+        html.append("\n</script>\n");
+
+        html.append("</body>\n");
+        html.append("</html>\n");
+
+        return html.toString();
+    }
+
+    private void agregarHead(
+            StringBuilder html) {
+
+        html.append("<head>\n");
+
+        html.append(
+                "<meta charset=\"UTF-8\">\n"
+        );
+
+        html.append(
+                "<meta name=\"viewport\" "
+                + "content=\"width=device-width, initial-scale=1.0\">\n"
+        );
+
+        html.append(
+                "<title>Reporte de Estadisticas - PromptZal</title>\n"
+        );
+
+        html.append("<style>\n");
+        html.append(estilo.getCss());
+        html.append("\n</style>\n");
+
+        html.append("</head>\n");
+    }
+
+    private void agregarEncabezado(
+            StringBuilder html) {
+
+        html.append("<header>\n");
+
+        html.append(
+                "<div class=\"titulo-reporte\">\n"
+        );
+
+        html.append(
+                "<h1>Reporte de Estadisticas</h1>\n"
+        );
+
+        html.append(
+                "<p>Resumen general del proceso "
+                + "de compilacion de PromptZal</p>\n"
+        );
+
+        html.append("</div>\n");
+
+        html.append(
+                "<div class=\"marca\">"
+                + "PromptZal Compiler"
+                + "</div>\n"
+        );
+
+        html.append("</header>\n");
+    }
+
+    private void agregarResumen(
+            StringBuilder html,
+            int totalTokens,
+            int tiposUtilizados,
+            int totalLineas,
+            int totalErrores) {
+
+        html.append("<div class=\"resumen\">\n");
+
+        html.append(
+                "<div class=\"tarjeta tarjeta-tokens\">\n"
+        );
+
+        html.append("<span>Total de tokens</span>\n");
+
+        html.append("<strong>")
+                .append(totalTokens)
+                .append("</strong>\n");
+
+        html.append("</div>\n");
+
+        html.append(
+                "<div class=\"tarjeta tarjeta-tipos\">\n"
+        );
+
+        html.append("<span>Tipos utilizados</span>\n");
+
+        html.append("<strong>")
+                .append(tiposUtilizados)
+                .append("</strong>\n");
+
+        html.append("</div>\n");
+
+        html.append(
+                "<div class=\"tarjeta tarjeta-lineas\">\n"
+        );
+
+        html.append("<span>Total de lineas</span>\n");
+
+        html.append("<strong>")
+                .append(totalLineas)
+                .append("</strong>\n");
+
+        html.append("</div>\n");
+
+        html.append(
+                "<div class=\"tarjeta tarjeta-errores\">\n"
+        );
+
+        html.append("<span>Total de errores</span>\n");
+
+        html.append("<strong>")
+                .append(totalErrores)
+                .append("</strong>\n");
+
+        html.append("</div>\n");
+
+        html.append("</div>\n");
+    }
+
+    private void agregarFrecuencias(
+            StringBuilder html,
+            ArrayList<Token> tokens,
+            int totalTokens) {
+
+        html.append("<div class=\"seccion\">\n");
+
+        html.append(
+                "<div class=\"titulo-seccion\">\n"
+        );
+
+        html.append(
+                "<h2>Frecuencia por tipo de token</h2>\n"
+        );
+
+        html.append(
+                "<span>Distribucion de los terminales "
+                + "reconocidos por JFlex</span>\n"
+        );
+
+        html.append("</div>\n");
+
+        html.append(
+                "<div class=\"lista-frecuencias\">\n"
+        );
+
+        TipoToken[] tipos = TipoToken.values();
+
+        for (int i = 0; i < tipos.length; i++) {
+
+            TipoToken tipo = tipos[i];
+
+            int cantidad = contarTipo(
+                    tokens,
+                    tipo
+            );
+
+            double porcentaje = 0.0;
+
+            if (totalTokens > 0) {
                 porcentaje
-                        = (entrada.getValue() * 100.0) / cantidadTokens;
+                        = cantidad * 100.0
+                        / totalTokens;
             }
 
-            html.append("<tr>");
-
-            html.append("<td>").append(numero).append("</td>");
-
-            html.append("<td>");
-            html.append(escaparHTML(entrada.getKey().toString()));
-            html.append("</td>");
-
-            html.append("<td>").append(entrada.getValue()).append("</td>");
-
-            html.append("<td>");
-            html.append(String.format("%.2f", porcentaje));
-            html.append(" %</td>");
-
-            html.append("</tr>");
-
-            numero++;
+            agregarFrecuencia(
+                    html,
+                    tipo,
+                    cantidad,
+                    porcentaje
+            );
         }
 
-        html.append("</tbody>");
-        html.append("</table>");
-
-        html.append("<footer>");
-        html.append("Laboratorio de Lenguajes Formales y de Programacion");
-        html.append("</footer>");
-
-        html.append("</div>");
-        html.append("</body>");
-        html.append("</html>");
-
-        escribirArchivo(rutaSalida, html.toString());
+        html.append("</div>\n");
+        html.append("</div>\n");
     }
 
-    private String crearTarjeta(String titulo, int valor) {
+    private void agregarFrecuencia(
+            StringBuilder html,
+            TipoToken tipo,
+            int cantidad,
+            double porcentaje) {
 
-        StringBuilder tarjeta = new StringBuilder();
+        String porcentajeTexto
+                = String.format(
+                        Locale.US,
+                        "%.2f",
+                        porcentaje
+                );
 
-        tarjeta.append("<div class=\"tarjeta\">");
-        tarjeta.append("<span class=\"valor\">");
-        tarjeta.append(valor);
-        tarjeta.append("</span>");
-        tarjeta.append("<span class=\"titulo\">");
-        tarjeta.append(escaparHTML(titulo));
-        tarjeta.append("</span>");
-        tarjeta.append("</div>");
+        html.append(
+                "<div class=\"frecuencia\">\n"
+        );
 
-        return tarjeta.toString();
+        html.append(
+                "<div class=\"frecuencia-encabezado\">\n"
+        );
+
+        html.append(
+                "<span class=\"tipo-token\" title=\""
+        );
+
+        html.append(
+                escaparHTML(
+                        tipo.getDescripcion()
+                )
+        );
+
+        html.append("\">");
+
+        html.append(
+                escaparHTML(
+                        tipo.name()
+                )
+        );
+
+        html.append("</span>\n");
+
+        html.append(
+                "<span class=\"cantidad\">"
+        );
+
+        html.append(cantidad);
+
+        html.append("</span>\n");
+
+        html.append("</div>\n");
+
+        html.append(
+                "<div class=\"barra-contenedor\">\n"
+        );
+
+        html.append(
+                "<div class=\"barra\" "
+                + "data-porcentaje=\""
+        );
+
+        html.append(
+                Double.toString(porcentaje)
+        );
+
+        html.append("\"></div>\n");
+
+        html.append("</div>\n");
+
+        html.append(
+                "<div class=\"porcentaje\">"
+        );
+
+        html.append(porcentajeTexto)
+                .append(" %");
+
+        html.append("</div>\n");
+
+        html.append("</div>\n");
     }
 
-    private String obtenerEstilos() {
+    private void agregarResumenCompilacion(
+            StringBuilder html,
+            int totalTokens,
+            int tiposUtilizados,
+            int totalLineas,
+            int totalLexicos,
+            int totalSintacticos,
+            int totalSemanticos,
+            int totalErrores) {
 
-        return """
-               :root {
-                                                    --acento: #3b82f6;
-                                                    --fondo: #0f172a;
-                                                    --panel: #16202f;
-                                                    --texto: #e2e8f0;
-                                                    --borde: #2b3b52;
-                                                }
-                                                body{
-                                                           margin: 0;
-                                                           padding: 30px;
-                                                           font-family: Arial, Helvetica, sans-serif;
-                                                           background-color: var(--fondo);
-                                                           color: var(--texto);
-                                                }
-                                                .contenedor {
-                                                          max-width: 1100px;
-                                                          margin: 0 auto;
-                                                          background-color: var(--panel);
-                                                          border: 1px solid var(--borde);
-                                                          border-radius: 8px;
-                                                          overflow: hidden;
-                                                }
-                                                header{
-                                                          background-color: #0b1220;
-                                                          color: white;
-                                                          padding: 25px 30px;
-                                                }
-                                                header h1{ margin: 0; }
-                                                header p{ margin: 6px 0 0; color: #9db3cc; }
-                                                .resumen{
-                                                          margin: 25px 30px 15px;
-                                                          padding: 14px;
-                                                          background-color: #1e293b;
-                                                          border-left: 4px solid var(--acento);
-                                                }
-                                                table {
-                                                          width: calc(100% - 60px);
-                                                          margin: 20px 30px 30px;
-                                                          border-collapse: collapse;
-                                                }
-                                                thead{
-                                                          background-color: var(--acento);
-                                                          color: white;
-                                                }
-                                                th, td {
-                                                          padding: 11px 13px;
-                                                          border: 1px solid var(--borde);
-                                                          text-align: left;
-                                                }
-                                                tbody tr:nth-child(even){ background-color: #1b2635; }
-                                                .lexema{
-                                                          font-family: "Courier New", monospace;
-                                                          font-weight: bold;
-                                                          color: #f1f5f9;
-                                                }
-                                                footer{
-                                                          padding: 18px;
-                                                          background-color: #0b1220;
-                                                          text-align: center;
-                                                          color: #7c8ba1;
-                }
-                                                """;
+        html.append("<div class=\"seccion\">\n");
+
+        html.append(
+                "<div class=\"titulo-seccion\">\n"
+        );
+
+        html.append(
+                "<h2>Resumen de compilacion</h2>\n"
+        );
+
+        html.append(
+                "<span>Resultados generales del analisis</span>\n"
+        );
+
+        html.append("</div>\n");
+
+        html.append(
+                "<div class=\"tabla-contenedor\">\n"
+        );
+
+        html.append("<table>\n");
+
+        html.append("<thead>\n");
+        html.append("<tr>\n");
+
+        html.append("<th>Metrica</th>\n");
+        html.append("<th>Valor</th>\n");
+
+        html.append("</tr>\n");
+        html.append("</thead>\n");
+
+        html.append("<tbody>\n");
+
+        agregarFilaResumen(
+                html,
+                "Tokens reconocidos",
+                String.valueOf(totalTokens),
+                false
+        );
+
+        agregarFilaResumen(
+                html,
+                "Tipos de token utilizados",
+                String.valueOf(tiposUtilizados),
+                false
+        );
+
+        agregarFilaResumen(
+                html,
+                "Lineas analizadas",
+                String.valueOf(totalLineas),
+                false
+        );
+
+        agregarFilaResumen(
+                html,
+                "Errores lexicos",
+                String.valueOf(totalLexicos),
+                totalLexicos > 0
+        );
+
+        agregarFilaResumen(
+                html,
+                "Errores sintacticos",
+                String.valueOf(totalSintacticos),
+                totalSintacticos > 0
+        );
+
+        agregarFilaResumen(
+                html,
+                "Errores semanticos",
+                String.valueOf(totalSemanticos),
+                totalSemanticos > 0
+        );
+
+        agregarFilaResumen(
+                html,
+                "Total de errores",
+                String.valueOf(totalErrores),
+                totalErrores > 0
+        );
+
+        agregarEstadoCompilacion(
+                html,
+                totalErrores
+        );
+
+        html.append("</tbody>\n");
+
+        html.append("</table>\n");
+
+        html.append("</div>\n");
+        html.append("</div>\n");
     }
 
-    private String escaparHTML(String texto) {
+    private void agregarFilaResumen(
+            StringBuilder html,
+            String nombre,
+            String valor,
+            boolean error) {
+
+        html.append("<tr>\n");
+
+        html.append("<td>")
+                .append(
+                        escaparHTML(nombre)
+                )
+                .append("</td>\n");
+
+        html.append("<td class=\"");
+
+        if (error) {
+            html.append("estado-error");
+        } else {
+            html.append("dato");
+        }
+
+        html.append("\">");
+
+        html.append(
+                escaparHTML(valor)
+        );
+
+        html.append("</td>\n");
+
+        html.append("</tr>\n");
+    }
+
+    private void agregarEstadoCompilacion(
+            StringBuilder html,
+            int totalErrores) {
+
+        html.append("<tr>\n");
+
+        html.append(
+                "<td>Estado de la compilacion</td>\n"
+        );
+
+        if (totalErrores == 0) {
+
+            html.append(
+                    "<td class=\"estado-correcto\">"
+                    + "Sin errores"
+                    + "</td>\n"
+            );
+
+        } else {
+
+            html.append(
+                    "<td class=\"estado-error\">"
+                    + "Con errores"
+                    + "</td>\n"
+            );
+        }
+
+        html.append("</tr>\n");
+    }
+
+    private int contarTipo(
+            ArrayList<Token> tokens,
+            TipoToken tipoBuscado) {
+
+        int cantidad = 0;
+
+        for (Token token : tokens) {
+
+            if (token.getTipo()
+                    == tipoBuscado) {
+
+                cantidad++;
+            }
+        }
+
+        return cantidad;
+    }
+
+    private int contarTiposUtilizados(
+            ArrayList<Token> tokens) {
+
+        int cantidad = 0;
+
+        TipoToken[] tipos
+                = TipoToken.values();
+
+        for (int i = 0;
+                i < tipos.length;
+                i++) {
+
+            if (contarTipo(
+                    tokens,
+                    tipos[i]
+            ) > 0) {
+
+                cantidad++;
+            }
+        }
+
+        return cantidad;
+    }
+
+    private int contarLineas(
+            String codigoFuente) {
+
+        if (codigoFuente.isEmpty()) {
+            return 0;
+        }
+
+        int cantidad = 1;
+
+        for (int i = 0;
+                i < codigoFuente.length();
+                i++) {
+
+            if (codigoFuente.charAt(i) == '\n') {
+                cantidad++;
+            }
+        }
+
+        return cantidad;
+    }
+
+    private void agregarPie(
+            StringBuilder html) {
+
+        html.append("<footer>\n");
+
+        html.append(
+                "<span>PromptZal Compiler</span>\n"
+        );
+
+        html.append(
+                "<span>Reporte de estadisticas</span>\n"
+        );
+
+        html.append("</footer>\n");
+    }
+
+    private String escaparHTML(
+            String texto) {
 
         if (texto == null) {
             return "";
         }
 
-        String resultado = texto;
-
-        resultado = resultado.replace("&", "&amp;");
-        resultado = resultado.replace("<", "&lt;");
-        resultado = resultado.replace(">", "&gt;");
-        resultado = resultado.replace("\"", "&quot;");
-
-        return resultado;
+        return texto
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 
-    private void escribirArchivo(String rutaSalida, String contenido) {
-
-        try {
-
-            Files.writeString(
-                    Path.of(rutaSalida),
-                    contenido,
-                    StandardCharsets.UTF_8
-            );
-
-            System.out.println(
-                    "Reporte de estadisticas generado " + rutaSalida
-            );
-
-        } catch (IOException e) {
-
-            System.out.println(
-                    "Error al generar reporte de estadisticas"
-            );
-        }
+    public String getRutaReporte() {
+        return rutaReporte;
     }
-
 }

@@ -565,108 +565,25 @@ footer {
 <div class="resumen">
 <div class="tarjeta">
 <span>Total de errores</span>
-<strong>5</strong>
+<strong>0</strong>
 </div>
 <div class="tarjeta tarjeta-lexicos">
 <span>Errores lexicos</span>
-<strong>1</strong>
+<strong>0</strong>
 </div>
 <div class="tarjeta tarjeta-sintacticos">
 <span>Errores sintacticos</span>
-<strong>1</strong>
+<strong>0</strong>
 </div>
 <div class="tarjeta tarjeta-semanticos">
 <span>Errores semanticos</span>
-<strong>3</strong>
+<strong>0</strong>
 </div>
 </div>
-<div class="herramientas">
-<div class="grupo-busqueda">
-<input type="text" id="buscadorErrores" class="buscador" placeholder="Buscar por descripcion, token, fila o columna...">
-<select id="filtroTipo" class="filtro">
-<option value="TODOS">Todos los errores</option>
-<option value="LEXICO">Lexicos</option>
-<option value="SINTACTICO">Sintacticos</option>
-<option value="SEMANTICO">Semanticos</option>
-</select>
-</div>
-<div id="contadorVisibles" class="contador">5 errores visibles</div>
-</div>
-<div class="contenedor-tabla">
-<table>
-<thead>
-<tr>
-<th>No.</th>
-<th>Tipo</th>
-<th>Descripcion</th>
-<th>Fila</th>
-<th>Columna</th>
-<th>Encontrado</th>
-<th>Esperado</th>
-</tr>
-</thead>
-<tbody id="cuerpoErrores">
-<tr class="fila-error" data-tipo="LEXICO" data-fila="2" data-columna="1">
-<td class="numero">1</td>
-<td>
-<span class="badge tipo-lexico">LEXICO</span>
-</td>
-<td class="descripcion">Caracter no reconocido</td>
-<td class="posicion">2</td>
-<td class="posicion">1</td>
-<td class="token">$</td>
-<td class="vacio">&mdash;</td>
-</tr>
-<tr class="fila-error" data-tipo="SINTACTICO" data-fila="5" data-columna="14">
-<td class="numero">2</td>
-<td>
-<span class="badge tipo-sintactico">SINTACTICO</span>
-</td>
-<td class="descripcion">Se encontro &#39;&quot;Falta el igual&quot;&#39; y se esperaba &#39;IGUAL&#39;</td>
-<td class="posicion">5</td>
-<td class="posicion">14</td>
-<td class="token">&quot;Falta el igual&quot;</td>
-<td class="token">IGUAL</td>
-</tr>
-<tr class="fila-error" data-tipo="SEMANTICO" data-fila="6" data-columna="">
-<td class="numero">3</td>
-<td>
-<span class="badge tipo-semantico">SEMANTICO</span>
-</td>
-<td class="descripcion">El identificador &#39;ventas&#39; no ha sido declarado antes en el agente &#39;analista&#39;.</td>
-<td class="posicion">6</td>
-<td class="vacio">&mdash;</td>
-<td class="vacio">&mdash;</td>
-<td class="vacio">&mdash;</td>
-</tr>
-<tr class="fila-error" data-tipo="SEMANTICO" data-fila="9" data-columna="">
-<td class="numero">4</td>
-<td>
-<span class="badge tipo-semantico">SEMANTICO</span>
-</td>
-<td class="descripcion">El agente &#39;fantasma&#39; usado en EJECUTAR no existe.</td>
-<td class="posicion">9</td>
-<td class="vacio">&mdash;</td>
-<td class="vacio">&mdash;</td>
-<td class="vacio">&mdash;</td>
-</tr>
-<tr class="fila-error" data-tipo="SEMANTICO" data-fila="10" data-columna="">
-<td class="numero">5</td>
-<td>
-<span class="badge tipo-semantico">SEMANTICO</span>
-</td>
-<td class="descripcion">La variable &#39;resultado&#39; usada en EXPORTAR no existe en ningun agente ejecutado.</td>
-<td class="posicion">10</td>
-<td class="vacio">&mdash;</td>
-<td class="vacio">&mdash;</td>
-<td class="vacio">&mdash;</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div id="sinResultados" class="sin-resultados">
-<strong>No se encontraron coincidencias</strong>
-<span>Prueba con otro termino de busqueda o filtro.</span>
+<div class="estado-correcto">
+<div class="icono">&#10003;</div>
+<h2>Compilacion sin errores</h2>
+<p>No se encontraron errores lexicos, sintacticos ni semanticos.</p>
 </div>
 </section>
 <footer>

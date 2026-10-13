@@ -943,13 +943,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
                 Token[] arregloTokens
                         = tokensLexicos.toArray(new Token[0]);
 
-                generador.generar(
-                        arregloTokens,
-                        arregloTokens.length,
-                        erroresLexicos.size(),
-                        contarLineas(contenidoArchivo),
-                        ruta.toString()
-                );
+                
 
                 JOptionPane.showMessageDialog(
                         this,
