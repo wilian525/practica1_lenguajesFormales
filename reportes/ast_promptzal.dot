@@ -1,0 +1,47 @@
+digraph AST_PromptZal {
+rankdir=TB;
+labelloc="t";
+label="AST - PromptZal";
+fontsize=20;
+node [shape=box, style="rounded"];
+
+nodo0 [label="Programa"];
+nodo1 [label="Directivas"];
+nodo0 -> nodo1;
+nodo2 [label="@modelo\ngpt"];
+nodo1 -> nodo2;
+nodo3 [label="Agentes"];
+nodo0 -> nodo3;
+nodo4 [label="Agente\nanalista"];
+nodo3 -> nodo4;
+nodo5 [label="Contexto\nFalta el igual"];
+nodo4 -> nodo5;
+nodo6 [label="Comandos"];
+nodo4 -> nodo6;
+nodo7 [label="Comando\nPREGUNTAR"];
+nodo6 -> nodo7;
+nodo8 [label="Expresion principal"];
+nodo7 -> nodo8;
+nodo9 [label="Expresion"];
+nodo8 -> nodo9;
+nodo10 [label="CADENA\nAnaliza los datos"];
+nodo9 -> nodo10;
+nodo11 [label="Conectores"];
+nodo7 -> nodo11;
+nodo12 [label="SOBRE"];
+nodo11 -> nodo12;
+nodo13 [label="Expresion"];
+nodo12 -> nodo13;
+nodo14 [label="ID\nventas"];
+nodo13 -> nodo14;
+nodo15 [label="Destino\nresultado"];
+nodo7 -> nodo15;
+nodo16 [label="Ejecuciones"];
+nodo0 -> nodo16;
+nodo17 [label="EJECUTAR\nfantasma"];
+nodo16 -> nodo17;
+nodo18 [label="Exportaciones"];
+nodo0 -> nodo18;
+nodo19 [label="EXPORTAR\nresultado"];
+nodo18 -> nodo19;
+}

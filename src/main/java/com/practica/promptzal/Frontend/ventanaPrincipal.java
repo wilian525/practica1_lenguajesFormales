@@ -907,11 +907,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
                 Token[] arregloTokens
                         = tokensLexicos.toArray(new Token[0]);
 
-                generador.generar(
-                        arregloTokens,
-                        arregloTokens.length,
-                        ruta.toString()
-                );
+              
 
                 JOptionPane.showMessageDialog(
                         this,

@@ -7,30 +7,31 @@ import com.practica.promptzal.Backend.lexer.TipoToken;
 import com.practica.promptzal.Backend.lexer.Token;
 import com.practica.promptzal.Backend.parser.ErrorSintactico;
 import com.practica.promptzal.Backend.parser.Parser;
+import com.practica.promptzal.Backend.reporte.GeneradorAST;
 import com.practica.promptzal.Backend.semantico.AnalizadorSemantico;
 import com.practica.promptzal.Backend.semantico.ErrorSemantico;
 import com.practica.promptzal.Backend.semantico.Simbolo;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import com.practica.promptzal.Backend.reporte.GeneradorReporteSimbolos;
+import com.practica.promptzal.Backend.reporte.GenerarReporteErroresHTML;
+import com.practica.promptzal.Backend.reporte.GeneradorReporteAST;
 
 public class PruebaParser {
 
     public static void main(String[] args) {
         String codigo = """
-        @modelo "claude-sonnet-4-6"
-        @rol "analista de datos"
-        @formato "markdown"
+        @modelo "gpt"
+        $
 
         AGENTE analista {
-            contexto = "Eres un analista de datos experto"
-            variable ventas = CARGAR("ventas.csv")
-            PREGUNTAR "Cuales son las 3 tendencias principales?" SOBRE ventas -> tendencias
-            RESUMIR tendencias EN 100 palabras -> resumen
+            contexto "Falta el igual"
+            PREGUNTAR "Analiza los datos" SOBRE ventas -> resultado
         }
 
-        EJECUTAR analista
-        EXPORTAR resumen
+        EJECUTAR fantasma
+        EXPORTAR resultado
         """;
 
         probar(codigo);
@@ -69,8 +70,99 @@ public class PruebaParser {
             Parser parser = new Parser(tokens);
             Programa programa = parser.parsear();
 
+            GeneradorReporteAST reporteAST
+                    = new GeneradorReporteAST();
+
+            boolean reporteASTGenerado
+                    = reporteAST.generar(programa);
+
+            System.out.println();
+            System.out.println("REPORTE AST");
+            System.out.println("----------------");
+
+            if (reporteASTGenerado) {
+                System.out.println(
+                        "Reporte AST generado correctamente."
+                );
+
+                System.out.println(
+                        "Ruta: "
+                        + reporteAST.getRutaReporte()
+                );
+            } else {
+                System.out.println(
+                        "No se pudo generar el reporte AST."
+                );
+            }
+
+            GeneradorAST generadorAST = new GeneradorAST();
+
+            boolean astGenerado = generadorAST.generar(programa);
+
+            System.out.println();
+            System.out.println("AST GRAFICO");
+            System.out.println("----------------");
+
+            if (astGenerado) {
+                System.out.println("AST generado correctamente.");
+                System.out.println("DOT: " + generadorAST.getRutaDot());
+                System.out.println("Imagen: " + generadorAST.getRutaImagen());
+            } else {
+                System.out.println("No se pudo generar el AST.");
+            }
+
             AnalizadorSemantico semantico = new AnalizadorSemantico();
             semantico.analizar(programa);
+
+            GenerarReporteErroresHTML reporteErrores
+                    = new GenerarReporteErroresHTML();
+
+            boolean reporteErroresGenerado = reporteErrores.generar(
+                    lexer.getErrores(),
+                    parser.getErrores(),
+                    semantico.getErrores()
+            );
+
+            System.out.println();
+            System.out.println("REPORTE DE ERRORES");
+            System.out.println("----------------");
+
+            if (reporteErroresGenerado) {
+                System.out.println(
+                        "Reporte generado correctamente."
+                );
+
+                System.out.println(
+                        "Ruta: "
+                        + reporteErrores.getRutaReporte()
+                );
+            } else {
+                System.out.println(
+                        "No se pudo generar el reporte de errores."
+                );
+            }
+
+            GeneradorReporteSimbolos reporteSimbolos
+                    = new GeneradorReporteSimbolos();
+
+            boolean reporteGenerado = reporteSimbolos.generar(
+                    semantico.getTablaSimbolos()
+            );
+
+            System.out.println();
+            System.out.println("REPORTE DE SIMBOLOS");
+            System.out.println("----------------");
+
+            if (reporteGenerado) {
+                System.out.println("Reporte generado correctamente.");
+                System.out.println(
+                        "Ruta: " + reporteSimbolos.getRutaReporte()
+                );
+            } else {
+                System.out.println(
+                        "No se pudo generar el reporte de simbolos."
+                );
+            }
 
             GeneradorPromptzal generador = new GeneradorPromptzal();
             String promptGenerado = generador.generar(programa);

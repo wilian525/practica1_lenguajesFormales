@@ -1,0 +1,69 @@
+digraph AFD_PromptZal {
+rankdir=LR;
+labelloc="t";
+label="AFD General - PromptZal";
+fontsize=20;
+node [shape=circle];
+
+inicio [shape=point];
+q0 [label="q0"];
+inicio -> q0;
+
+qID [shape=doublecircle, label="ID\nPalabra reservada"];
+qNUM [shape=doublecircle, label="NUMERO"];
+qCAD [shape=doublecircle, label="CADENA"];
+qDIR [shape=doublecircle, label="DIRECTIVA"];
+qIGUAL [shape=doublecircle, label="IGUAL"];
+qMAS [shape=doublecircle, label="MAS"];
+qFLECHA [shape=doublecircle, label="FLECHA"];
+qLLAVEA [shape=doublecircle, label="LLAVE_A"];
+qLLAVEC [shape=doublecircle, label="LLAVE_C"];
+qPARA [shape=doublecircle, label="PAR_A"];
+qPARC [shape=doublecircle, label="PAR_C"];
+qCOMA [shape=doublecircle, label="COMA"];
+qCOMLINEA [shape=doublecircle, label="Comentario linea\nIgnorado"];
+qCOMBLOQUE [shape=doublecircle, label="Comentario bloque\nIgnorado"];
+
+q0 -> qID [label="letra, _"];
+qID -> qID [label="letra, digito, _"];
+
+q0 -> qNUM [label="digito"];
+qNUM -> qNUM [label="digito"];
+qNUM -> qPUNTO [label="."];
+qPUNTO -> qDEC [label="digito"];
+qDEC [shape=doublecircle, label="NUMERO"];
+qDEC -> qDEC [label="digito"];
+
+q0 -> qCADINI [label="comilla"];
+qCADINI -> qCADINI [label="caracter excepto comilla y salto"];
+qCADINI -> qCAD [label="comilla"];
+
+q0 -> qARROBA [label="@"];
+qARROBA -> qDIR [label="modelo, rol, formato"];
+
+q0 -> qIGUAL [label="="];
+q0 -> qMAS [label="+"];
+q0 -> qGUION [label="-"];
+qGUION -> qFLECHA [label=">"];
+
+q0 -> qLLAVEA [label="{"];
+q0 -> qLLAVEC [label="}"];
+q0 -> qPARA [label="("];
+q0 -> qPARC [label=")"];
+q0 -> qCOMA [label=","];
+
+q0 -> qDIAGONAL [label="/"];
+qDIAGONAL -> qCOMLINEA [label="/"];
+qCOMLINEA -> qCOMLINEA [label="caracter excepto salto"];
+qDIAGONAL -> qCOMBLOQUEINI [label="*"];
+qCOMBLOQUEINI -> qCOMBLOQUEINI [label="cualquier caracter excepto cierre"];
+qCOMBLOQUEINI -> qASTERISCO [label="*"];
+qASTERISCO -> qCOMBLOQUE [label="/"];
+qASTERISCO -> qCOMBLOQUEINI [label="otro caracter"];
+
+subgraph cluster_reservadas {
+label="Clasificacion posterior del identificador";
+style=dashed;
+reservadas [shape=note, label="AGENTE\ncontexto\nvariable\nEJECUTAR\nEXPORTAR\nPREGUNTAR\nGENERAR\nRESUMIR\nANALIZAR\nTRADUCIR\nCLASIFICAR\nEXTRAER\nCARGAR\nSOBRE\nDESDE\nEN\nCOMO"];
+}
+}

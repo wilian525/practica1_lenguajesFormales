@@ -5,9 +5,14 @@
 package com.practica.promptzal.Backend.reporte;
 
 import com.practica.promptzal.Backend.lexer.ErrorLexico;
+import com.practica.promptzal.Backend.parser.ErrorSintactico;
+import com.practica.promptzal.Backend.reporte.estiloReporte.ReporteErroresEstilo;
+import com.practica.promptzal.Backend.semantico.ErrorSemantico;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.ArrayList;
 
 /**
  *
@@ -15,201 +20,755 @@ import java.nio.file.Path;
  */
 public class GenerarReporteErroresHTML {
 
-    public void generar(ErrorLexico[] errores, int cantidadErrores, String rutaSalida) {
+    private String rutaCarpeta;
+    private String rutaReporte;
+    private ReporteErroresEstilo estilo;
+
+    public GenerarReporteErroresHTML() {
+        rutaCarpeta = "reportes";
+        rutaReporte = rutaCarpeta + "/reporte_errores.html";
+        estilo = new ReporteErroresEstilo();
+    }
+
+    public boolean generar(
+            ArrayList<ErrorLexico> erroresLexicos,
+            ArrayList<ErrorSintactico> erroresSintacticos,
+            ArrayList<ErrorSemantico> erroresSemanticos) {
+
+        return generar(
+                erroresLexicos,
+                erroresSintacticos,
+                erroresSemanticos,
+                rutaReporte
+        );
+    }
+
+    public boolean generar(
+            ArrayList<ErrorLexico> erroresLexicos,
+            ArrayList<ErrorSintactico> erroresSintacticos,
+            ArrayList<ErrorSemantico> erroresSemanticos,
+            String rutaSalida) {
+
+        if (erroresLexicos == null
+                || erroresSintacticos == null
+                || erroresSemanticos == null) {
+
+            return false;
+        }
+
+        crearCarpetaSalida(rutaSalida);
+
+        String contenido = construirHTML(
+                erroresLexicos,
+                erroresSintacticos,
+                erroresSemanticos
+        );
+
+        try (BufferedWriter escritor
+                = new BufferedWriter(
+                        new FileWriter(rutaSalida)
+                )) {
+
+            escritor.write(contenido);
+
+            return true;
+
+        } catch (IOException e) {
+
+            System.out.println(
+                    "Error al generar el reporte de errores: "
+                    + e.getMessage()
+            );
+
+            return false;
+        }
+    }
+
+    // Metodo temporal para mantener compatibilidad
+    // con la interfaz anterior del Proyecto 1
+    public void generar(
+            ErrorLexico[] errores,
+            int cantidadErrores,
+            String rutaSalida) {
+
+        ArrayList<ErrorLexico> erroresLexicos
+                = new ArrayList<>();
+
+        if (errores != null) {
+
+            for (int i = 0;
+                    i < cantidadErrores
+                    && i < errores.length;
+                    i++) {
+
+                if (errores[i] != null) {
+                    erroresLexicos.add(
+                            errores[i]
+                    );
+                }
+            }
+        }
+
+        ArrayList<ErrorSintactico> erroresSintacticos
+                = new ArrayList<>();
+
+        ArrayList<ErrorSemantico> erroresSemanticos
+                = new ArrayList<>();
+
+        generar(
+                erroresLexicos,
+                erroresSintacticos,
+                erroresSemanticos,
+                rutaSalida
+        );
+    }
+
+    private void crearCarpetaSalida(String rutaSalida) {
+        File archivo = new File(rutaSalida);
+
+        File carpeta = archivo.getParentFile();
+
+        if (carpeta != null
+                && !carpeta.exists()) {
+
+            carpeta.mkdirs();
+        }
+    }
+
+    private String construirHTML(
+            ArrayList<ErrorLexico> erroresLexicos,
+            ArrayList<ErrorSintactico> erroresSintacticos,
+            ArrayList<ErrorSemantico> erroresSemanticos) {
+
         StringBuilder html = new StringBuilder();
 
-        html.append("<!DOCTYPE html>");
-        html.append("<html lang=\"es\">");
+        int totalLexicos = erroresLexicos.size();
+        int totalSintacticos = erroresSintacticos.size();
+        int totalSemanticos = erroresSemanticos.size();
 
-        html.append("<head>");
-        html.append("<meta charset=\"UTF-8\">");
-        html.append("<title>Reporte de Errores - PromptZal</title>");
+        int totalErrores = totalLexicos
+                + totalSintacticos
+                + totalSemanticos;
 
-        html.append("<style>");
-        html.append(obtenerEstilos());
-        html.append("</style>");
+        html.append("<!DOCTYPE html>\n");
+        html.append("<html lang=\"es\">\n");
 
-        html.append("</head>");
+        agregarHead(html);
 
-        html.append("<body>");
+        html.append("<body>\n");
+        html.append("<main class=\"contenedor\">\n");
 
-        html.append("<div class=\"contenedor\">");
+        agregarEncabezado(html);
 
-        html.append("<header>");
-        html.append("<h1>PromptZal</h1>");
-        html.append("<p>Reporte de Errores Lexicos</p>");
-        html.append("</header>");
+        html.append("<section class=\"contenido\">\n");
 
-        if (cantidadErrores == 0) {
-            html.append("<div class=\"sin-errores\">");
+        agregarResumen(
+                html,
+                totalErrores,
+                totalLexicos,
+                totalSintacticos,
+                totalSemanticos
+        );
 
-            html.append("<h2>Analisis completado</h2>");
+        if (totalErrores == 0) {
 
-            html.append("<p>");
-            html.append("No se encontraron errores lexicos.");
-            html.append("</p>");
-
-            html.append("</div>");
+            agregarEstadoCorrecto(html);
 
         } else {
 
-            html.append("<div class=\"resumen\">");
+            agregarHerramientas(
+                    html,
+                    totalErrores
+            );
 
-            html.append("<strong>Total de errores:</strong> ");
+            agregarTabla(
+                    html,
+                    erroresLexicos,
+                    erroresSintacticos,
+                    erroresSemanticos
+            );
 
-            html.append(cantidadErrores);
-
-            html.append("</div>");
-
-            html.append("<table>");
-
-            html.append("<thead>");
-
-            html.append("<tr>");
-            html.append("<th>No.</th>");
-            html.append("<th>Lexema</th>");
-            html.append("<th>Descripcion</th>");
-            html.append("<th>Fila</th>");
-            html.append("<th>Columna</th>");
-            html.append("</tr>");
-
-            html.append("</thead>");
-
-            html.append("<tbody>");
-
-            for (int i = 0; i < cantidadErrores; i++) {
-                ErrorLexico error = errores[i];
-                html.append("<tr>");
-
-                html.append("<td>");
-                html.append(i + 1);
-                html.append("</td>");
-
-                html.append("<td class=\"lexema\">");
-                html.append(escaparHTML(error.getLexema()));
-                html.append("</td>");
-
-                html.append("<td>");
-                html.append(escaparHTML(error.getDescripcion()));
-                html.append("</td>");
-
-                html.append("<td>");
-                html.append(error.getFila());
-                html.append("</td>");
-
-                html.append("<td>");
-                html.append(error.getColumna());
-                html.append("</td>");
-
-                html.append("</tr>");
-            }
-
-            html.append("</tbody>");
-
-            html.append("</table>");
+            agregarMensajeSinResultados(html);
         }
 
-        html.append("<footer>");
-        html.append("Laboratorio de Lenguajes Formales y de Programacion");
-        html.append("</footer>");
+        html.append("</section>\n");
 
-        html.append("</div>");
+        agregarPie(html);
 
-        html.append("</body>");
+        html.append("</main>\n");
 
-        html.append("</html>");
+        html.append("<script>\n");
+        html.append(estilo.getJavaScript());
+        html.append("\n</script>\n");
 
-        escribirArchivo(rutaSalida, html.toString());
+        html.append("</body>\n");
+        html.append("</html>\n");
+
+        return html.toString();
     }
 
-    private String obtenerEstilos() {
-        return """
-                       :root {
-                                                           --acento: #3b82f6;
-                                                           --fondo: #0f172a;
-                                                           --panel: #16202f;
-                                                           --texto: #e2e8f0;
-                                                           --borde: #2b3b52;
-                                                       }
-                                                       body{
-                                                                  margin: 0;
-                                                                  padding: 30px;
-                                                                  font-family: Arial, Helvetica, sans-serif;
-                                                                  background-color: var(--fondo);
-                                                                  color: var(--texto);
-                                                       }
-                                                       .contenedor {
-                                                                 max-width: 1100px;
-                                                                 margin: 0 auto;
-                                                                 background-color: var(--panel);
-                                                                 border: 1px solid var(--borde);
-                                                                 border-radius: 8px;
-                                                                 overflow: hidden;
-                                                       }
-                                                       header{
-                                                                 background-color: #0b1220;
-                                                                 color: white;
-                                                                 padding: 25px 30px;
-                                                       }
-                                                       header h1{ margin: 0; }
-                                                       header p{ margin: 6px 0 0; color: #9db3cc; }
-                                                       .resumen{
-                                                                 margin: 25px 30px 15px;
-                                                                 padding: 14px;
-                                                                 background-color: #1e293b;
-                                                                 border-left: 4px solid var(--acento);
-                                                       }
-                                                       table {
-                                                                 width: calc(100% - 60px);
-                                                                 margin: 20px 30px 30px;
-                                                                 border-collapse: collapse;
-                                                       }
-                                                       thead{
-                                                                 background-color: var(--acento);
-                                                                 color: white;
-                                                       }
-                                                       th, td {
-                                                                 padding: 11px 13px;
-                                                                 border: 1px solid var(--borde);
-                                                                 text-align: left;
-                                                       }
-                                                       tbody tr:nth-child(even){ background-color: #1b2635; }
-                                                       .lexema{
-                                                                 font-family: "Courier New", monospace;
-                                                                 font-weight: bold;
-                                                                 color: #f1f5f9;
-                                                       }
-                                                       footer{
-                                                                 padding: 18px;
-                                                                 background-color: #0b1220;
-                                                                 text-align: center;
-                                                                 color: #7c8ba1;
-                                   }
-                   """;
+    private void agregarHead(StringBuilder html) {
+        html.append("<head>\n");
 
+        html.append(
+                "<meta charset=\"UTF-8\">\n"
+        );
+
+        html.append(
+                "<meta name=\"viewport\" "
+                + "content=\"width=device-width, initial-scale=1.0\">\n"
+        );
+
+        html.append(
+                "<title>Reporte de Errores - PromptZal</title>\n"
+        );
+
+        html.append("<style>\n");
+        html.append(estilo.getCss());
+        html.append("\n</style>\n");
+
+        html.append("</head>\n");
+    }
+
+    private void agregarEncabezado(StringBuilder html) {
+        html.append("<header>\n");
+
+        html.append("<div class=\"titulo-reporte\">\n");
+
+        html.append(
+                "<h1>Reporte de Errores</h1>\n"
+        );
+
+        html.append(
+                "<p>Resultados del analisis lexico, "
+                + "sintactico y semantico</p>\n"
+        );
+
+        html.append("</div>\n");
+
+        html.append(
+                "<div class=\"marca\">"
+                + "PromptZal Compiler"
+                + "</div>\n"
+        );
+
+        html.append("</header>\n");
+    }
+
+    private void agregarResumen(
+            StringBuilder html,
+            int totalErrores,
+            int totalLexicos,
+            int totalSintacticos,
+            int totalSemanticos) {
+
+        html.append("<div class=\"resumen\">\n");
+
+        html.append("<div class=\"tarjeta\">\n");
+        html.append("<span>Total de errores</span>\n");
+        html.append("<strong>")
+                .append(totalErrores)
+                .append("</strong>\n");
+        html.append("</div>\n");
+
+        html.append(
+                "<div class=\"tarjeta tarjeta-lexicos\">\n"
+        );
+
+        html.append("<span>Errores lexicos</span>\n");
+        html.append("<strong>")
+                .append(totalLexicos)
+                .append("</strong>\n");
+        html.append("</div>\n");
+
+        html.append(
+                "<div class=\"tarjeta tarjeta-sintacticos\">\n"
+        );
+
+        html.append("<span>Errores sintacticos</span>\n");
+        html.append("<strong>")
+                .append(totalSintacticos)
+                .append("</strong>\n");
+        html.append("</div>\n");
+
+        html.append(
+                "<div class=\"tarjeta tarjeta-semanticos\">\n"
+        );
+
+        html.append("<span>Errores semanticos</span>\n");
+        html.append("<strong>")
+                .append(totalSemanticos)
+                .append("</strong>\n");
+        html.append("</div>\n");
+
+        html.append("</div>\n");
+    }
+
+    private void agregarHerramientas(
+            StringBuilder html,
+            int totalErrores) {
+
+        html.append("<div class=\"herramientas\">\n");
+
+        html.append("<div class=\"grupo-busqueda\">\n");
+
+        html.append(
+                "<input "
+                + "type=\"text\" "
+                + "id=\"buscadorErrores\" "
+                + "class=\"buscador\" "
+                + "placeholder=\"Buscar por descripcion, "
+                + "token, fila o columna...\">\n"
+        );
+
+        html.append(
+                "<select "
+                + "id=\"filtroTipo\" "
+                + "class=\"filtro\">\n"
+        );
+
+        html.append(
+                "<option value=\"TODOS\">"
+                + "Todos los errores"
+                + "</option>\n"
+        );
+
+        html.append(
+                "<option value=\"LEXICO\">"
+                + "Lexicos"
+                + "</option>\n"
+        );
+
+        html.append(
+                "<option value=\"SINTACTICO\">"
+                + "Sintacticos"
+                + "</option>\n"
+        );
+
+        html.append(
+                "<option value=\"SEMANTICO\">"
+                + "Semanticos"
+                + "</option>\n"
+        );
+
+        html.append("</select>\n");
+
+        html.append("</div>\n");
+
+        html.append(
+                "<div "
+                + "id=\"contadorVisibles\" "
+                + "class=\"contador\">"
+        );
+
+        html.append(totalErrores);
+
+        if (totalErrores == 1) {
+            html.append(" error visible");
+        } else {
+            html.append(" errores visibles");
+        }
+
+        html.append("</div>\n");
+
+        html.append("</div>\n");
+    }
+
+    private void agregarTabla(
+            StringBuilder html,
+            ArrayList<ErrorLexico> erroresLexicos,
+            ArrayList<ErrorSintactico> erroresSintacticos,
+            ArrayList<ErrorSemantico> erroresSemanticos) {
+
+        html.append(
+                "<div class=\"contenedor-tabla\">\n"
+        );
+
+        html.append("<table>\n");
+
+        html.append("<thead>\n");
+        html.append("<tr>\n");
+
+        html.append("<th>No.</th>\n");
+        html.append("<th>Tipo</th>\n");
+        html.append("<th>Descripcion</th>\n");
+        html.append("<th>Fila</th>\n");
+        html.append("<th>Columna</th>\n");
+        html.append("<th>Encontrado</th>\n");
+        html.append("<th>Esperado</th>\n");
+
+        html.append("</tr>\n");
+        html.append("</thead>\n");
+
+        html.append("<tbody id=\"cuerpoErrores\">\n");
+
+        int numero = 1;
+
+        for (ErrorLexico error : erroresLexicos) {
+
+            agregarFilaLexica(
+                    html,
+                    error,
+                    numero
+            );
+
+            numero++;
+        }
+
+        for (ErrorSintactico error
+                : erroresSintacticos) {
+
+            agregarFilaSintactica(
+                    html,
+                    error,
+                    numero
+            );
+
+            numero++;
+        }
+
+        for (ErrorSemantico error
+                : erroresSemanticos) {
+
+            agregarFilaSemantica(
+                    html,
+                    error,
+                    numero
+            );
+
+            numero++;
+        }
+
+        html.append("</tbody>\n");
+
+        html.append("</table>\n");
+
+        html.append("</div>\n");
+    }
+
+    private void agregarFilaLexica(
+            StringBuilder html,
+            ErrorLexico error,
+            int numero) {
+
+        abrirFila(
+                html,
+                "LEXICO",
+                error.getFila(),
+                String.valueOf(error.getColumna())
+        );
+
+        agregarNumero(
+                html,
+                numero
+        );
+
+        agregarTipo(
+                html,
+                "LEXICO",
+                "tipo-lexico"
+        );
+
+        agregarDescripcion(
+                html,
+                error.getDescripcion()
+        );
+
+        agregarPosicion(
+                html,
+                error.getFila(),
+                String.valueOf(error.getColumna())
+        );
+
+        agregarToken(
+                html,
+                error.getLexema()
+        );
+
+        agregarVacio(html);
+
+        cerrarFila(html);
+    }
+
+    private void agregarFilaSintactica(
+            StringBuilder html,
+            ErrorSintactico error,
+            int numero) {
+
+        abrirFila(
+                html,
+                "SINTACTICO",
+                error.getFila(),
+                String.valueOf(error.getColumna())
+        );
+
+        agregarNumero(
+                html,
+                numero
+        );
+
+        agregarTipo(
+                html,
+                "SINTACTICO",
+                "tipo-sintactico"
+        );
+
+        agregarDescripcion(
+                html,
+                error.getDescripcion()
+        );
+
+        agregarPosicion(
+                html,
+                error.getFila(),
+                String.valueOf(error.getColumna())
+        );
+
+        agregarToken(
+                html,
+                error.getTokenEncontrado()
+        );
+
+        agregarToken(
+                html,
+                error.getTokenEsperado()
+        );
+
+        cerrarFila(html);
+    }
+
+    private void agregarFilaSemantica(
+            StringBuilder html,
+            ErrorSemantico error,
+            int numero) {
+
+        abrirFila(
+                html,
+                "SEMANTICO",
+                error.getLinea(),
+                ""
+        );
+
+        agregarNumero(
+                html,
+                numero
+        );
+
+        agregarTipo(
+                html,
+                "SEMANTICO",
+                "tipo-semantico"
+        );
+
+        agregarDescripcion(
+                html,
+                error.getDescripcion()
+        );
+
+        agregarPosicion(
+                html,
+                error.getLinea(),
+                null
+        );
+
+        agregarVacio(html);
+        agregarVacio(html);
+
+        cerrarFila(html);
+    }
+
+    private void abrirFila(
+            StringBuilder html,
+            String tipo,
+            int fila,
+            String columna) {
+
+        html.append(
+                "<tr class=\"fila-error\" "
+        );
+
+        html.append("data-tipo=\"")
+                .append(tipo)
+                .append("\" ");
+
+        html.append("data-fila=\"")
+                .append(fila)
+                .append("\" ");
+
+        html.append("data-columna=\"")
+                .append(
+                        columna == null
+                                ? ""
+                                : escaparHTML(columna)
+                )
+                .append("\">\n");
+    }
+
+    private void cerrarFila(StringBuilder html) {
+        html.append("</tr>\n");
+    }
+
+    private void agregarNumero(
+            StringBuilder html,
+            int numero) {
+
+        html.append("<td class=\"numero\">")
+                .append(numero)
+                .append("</td>\n");
+    }
+
+    private void agregarTipo(
+            StringBuilder html,
+            String texto,
+            String clase) {
+
+        html.append("<td>\n");
+
+        html.append("<span class=\"badge ")
+                .append(clase)
+                .append("\">");
+
+        html.append(texto);
+
+        html.append("</span>\n");
+
+        html.append("</td>\n");
+    }
+
+    private void agregarDescripcion(
+            StringBuilder html,
+            String descripcion) {
+
+        html.append("<td class=\"descripcion\">")
+                .append(
+                        escaparHTML(descripcion)
+                )
+                .append("</td>\n");
+    }
+
+    private void agregarPosicion(
+            StringBuilder html,
+            int fila,
+            String columna) {
+
+        html.append("<td class=\"posicion\">")
+                .append(fila)
+                .append("</td>\n");
+
+        if (columna == null
+                || columna.isEmpty()) {
+
+            agregarVacio(html);
+
+        } else {
+
+            html.append("<td class=\"posicion\">")
+                    .append(
+                            escaparHTML(columna)
+                    )
+                    .append("</td>\n");
+        }
+    }
+
+    private void agregarToken(
+            StringBuilder html,
+            String token) {
+
+        if (token == null
+                || token.isEmpty()) {
+
+            agregarVacio(html);
+            return;
+        }
+
+        html.append("<td class=\"token\">")
+                .append(
+                        escaparHTML(token)
+                )
+                .append("</td>\n");
+    }
+
+    private void agregarVacio(StringBuilder html) {
+        html.append(
+                "<td class=\"vacio\">&mdash;</td>\n"
+        );
+    }
+
+    private void agregarEstadoCorrecto(
+            StringBuilder html) {
+
+        html.append(
+                "<div class=\"estado-correcto\">\n"
+        );
+
+        html.append(
+                "<div class=\"icono\">&#10003;</div>\n"
+        );
+
+        html.append(
+                "<h2>Compilacion sin errores</h2>\n"
+        );
+
+        html.append(
+                "<p>No se encontraron errores lexicos, "
+                + "sintacticos ni semanticos.</p>\n"
+        );
+
+        html.append("</div>\n");
+    }
+
+    private void agregarMensajeSinResultados(
+            StringBuilder html) {
+
+        html.append(
+                "<div "
+                + "id=\"sinResultados\" "
+                + "class=\"sin-resultados\">\n"
+        );
+
+        html.append(
+                "<strong>No se encontraron coincidencias</strong>\n"
+        );
+
+        html.append(
+                "<span>"
+                + "Prueba con otro termino "
+                + "de busqueda o filtro."
+                + "</span>\n"
+        );
+
+        html.append("</div>\n");
+    }
+
+    private void agregarPie(StringBuilder html) {
+        html.append("<footer>\n");
+
+        html.append(
+                "<span>PromptZal Compiler</span>\n"
+        );
+
+        html.append(
+                "<span>Reporte general de errores</span>\n"
+        );
+
+        html.append("</footer>\n");
     }
 
     private String escaparHTML(String texto) {
         if (texto == null) {
             return "";
         }
-        String resultado = texto;
 
-        resultado = resultado.replace("&", "&amp;");
-        resultado = resultado.replace("<", "&lt;");
-        resultado = resultado.replace(">", "&gt;");
-        resultado = resultado.replace("\"", "&quot;");
-
-        return resultado;
+        return texto
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
     }
 
-    private void escribirArchivo(String rutaSalida, String contenido) {
-        try {
-            Files.writeString(Path.of(rutaSalida), contenido);
-            System.out.println("Reporte de errores generado " + rutaSalida);
-        } catch (IOException e) {
-            System.out.println("Error al generar reporte de errores");
-        }
+    public String getRutaReporte() {
+        return rutaReporte;
     }
 
 }
