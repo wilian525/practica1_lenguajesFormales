@@ -5,6 +5,9 @@
 package com.practica.promptzal.Frontend;
 
 import com.practica.promptzal.Backend.lexer.ErrorLexico;
+import com.practica.promptzal.Backend.parser.ErrorSintactico;
+import com.practica.promptzal.Backend.semantico.ErrorSemantico;
+import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -13,67 +16,134 @@ import javax.swing.table.DefaultTableModel;
  */
 public class TablaErroes extends javax.swing.JInternalFrame {
 
-      private DefaultTableModel modeloTabla;
+    private DefaultTableModel modeloTabla;
 
     public TablaErroes() {
         initComponents();
+        configurarVentana();
         configurarTabla();
     }
 
-    private void configurarTabla() {
+    private void configurarVentana() {
+        setTitle("Problemas");
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
+        setResizable(true);
+    }
 
+    private void configurarTabla() {
         modeloTabla = new DefaultTableModel(
                 new Object[][]{},
                 new String[]{
-                    "Lexema",
                     "Tipo",
-                    "Descripción",
+                    "Descripcion",
                     "Fila",
-                    "Columna"
+                    "Columna",
+                    "Encontrado",
+                    "Esperado"
                 }
         ) {
             @Override
-            public boolean isCellEditable(int fila, int columna) {
+            public boolean isCellEditable(
+                    int fila,
+                    int columna) {
+
                 return false;
             }
         };
 
         jTable1.setModel(modeloTabla);
+        jTable1.setFillsViewportHeight(true);
+        jTable1.setAutoCreateRowSorter(true);
     }
 
-    public void cargarErrores(ErrorLexico[] errores, int cantidad) {
+    public void cargarErrores(
+            ArrayList<ErrorLexico> erroresLexicos,
+            ArrayList<ErrorSintactico> erroresSintacticos,
+            ArrayList<ErrorSemantico> erroresSemanticos) {
 
-        modeloTabla.setRowCount(0);
-        if (errores == null || cantidad <= 0) {
+        limpiarTabla();
+
+        cargarErroresLexicos(erroresLexicos);
+        cargarErroresSintacticos(erroresSintacticos);
+        cargarErroresSemanticos(erroresSemanticos);
+    }
+
+    private void cargarErroresLexicos(
+            ArrayList<ErrorLexico> errores) {
+
+        if (errores == null) {
             return;
         }
 
-        int limite = Math.min(cantidad, errores.length);
-        for (int i = 0; i < limite; i++) {
-            ErrorLexico error = errores[i];
+        for (ErrorLexico error : errores) {
 
-            if (error != null) {
+            modeloTabla.addRow(
+                    new Object[]{
+                        "LEXICO",
+                        error.getDescripcion(),
+                        error.getFila(),
+                        error.getColumna(),
+                        error.getLexema(),
+                        "-"
+                    }
+            );
+        }
+    }
 
-                modeloTabla.addRow(new Object[]{
-                    error.getLexema(),
-                    error.getTipo(),
-                    error.getDescripcion(),
-                    error.getFila(),
-                    error.getColumna()
-                });
-            }
+    private void cargarErroresSintacticos(
+            ArrayList<ErrorSintactico> errores) {
+
+        if (errores == null) {
+            return;
+        }
+
+        for (ErrorSintactico error : errores) {
+
+            modeloTabla.addRow(
+                    new Object[]{
+                        "SINTACTICO",
+                        error.getDescripcion(),
+                        error.getFila(),
+                        error.getColumna(),
+                        error.getTokenEncontrado(),
+                        error.getTokenEsperado()
+                    }
+            );
+        }
+    }
+
+    private void cargarErroresSemanticos(
+            ArrayList<ErrorSemantico> errores) {
+
+        if (errores == null) {
+            return;
+        }
+
+        for (ErrorSemantico error : errores) {
+
+            modeloTabla.addRow(
+                    new Object[]{
+                        "SEMANTICO",
+                        error.getDescripcion(),
+                        error.getLinea(),
+                        "-",
+                        "-",
+                        "-"
+                    }
+            );
         }
     }
 
     public void limpiarTabla() {
-
         modeloTabla.setRowCount(0);
     }
 
     public javax.swing.JTable getTabla() {
-
         return jTable1;
     }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

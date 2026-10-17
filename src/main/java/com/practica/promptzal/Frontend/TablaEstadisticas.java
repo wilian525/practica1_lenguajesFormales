@@ -4,6 +4,13 @@
  */
 package com.practica.promptzal.Frontend;
 
+import com.practica.promptzal.Backend.lexer.ErrorLexico;
+import com.practica.promptzal.Backend.lexer.TipoToken;
+import com.practica.promptzal.Backend.lexer.Token;
+import com.practica.promptzal.Backend.parser.ErrorSintactico;
+import com.practica.promptzal.Backend.semantico.ErrorSemantico;
+import java.util.ArrayList;
+import java.util.Locale;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -12,84 +19,279 @@ import javax.swing.table.DefaultTableModel;
  */
 public class TablaEstadisticas extends javax.swing.JInternalFrame {
 
-   private DefaultTableModel modeloTabla;
-   
+    private DefaultTableModel modeloTabla;
+
     public TablaEstadisticas() {
         initComponents();
+        configurarVentana();
         configurarTabla();
     }
-    
-     private void configurarTabla() {
 
+    private void configurarVentana() {
+        setTitle("Estadisticas");
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
+        setResizable(true);
+    }
+
+    private void configurarTabla() {
         modeloTabla = new DefaultTableModel(
                 new Object[][]{},
                 new String[]{
-                    "Estadística",
+                    "Estadistica",
                     "Valor"
                 }
         ) {
             @Override
-            public boolean isCellEditable(int fila, int columna) {
+            public boolean isCellEditable(
+                    int fila,
+                    int columna) {
+
                 return false;
             }
         };
 
         jTable1.setModel(modeloTabla);
+        jTable1.setFillsViewportHeight(true);
+        jTable1.setAutoCreateRowSorter(true);
+
+        jTable1.getColumnModel()
+                .getColumn(0)
+                .setPreferredWidth(350);
+
+        jTable1.getColumnModel()
+                .getColumn(1)
+                .setPreferredWidth(180);
     }
 
     public void cargarEstadisticas(
-            int totalTokens,
-            int totalErrores,
-            int totalLineas) {
+            ArrayList<Token> tokens,
+            ArrayList<ErrorLexico> erroresLexicos,
+            ArrayList<ErrorSintactico> erroresSintacticos,
+            ArrayList<ErrorSemantico> erroresSemanticos,
+            String codigoFuente) {
 
-        modeloTabla.setRowCount(0);
+        limpiarTabla();
 
-        modeloTabla.addRow(new Object[]{
-            "Total de tokens",
-            totalTokens
-        });
+        if (tokens == null
+                || erroresLexicos == null
+                || erroresSintacticos == null
+                || erroresSemanticos == null
+                || codigoFuente == null) {
 
-        modeloTabla.addRow(new Object[]{
-            "Total de errores",
-            totalErrores
-        });
-
-        modeloTabla.addRow(new Object[]{
-            "Total de líneas",
-            totalLineas
-        });
-    }
-
-    public void agregarEstadistica(
-            String nombre,
-            Object valor) {
-
-        if (nombre == null || nombre.isEmpty()) {
             return;
         }
 
-        modeloTabla.addRow(new Object[]{
-            nombre,
-            valor
-        });
+        int totalTokens = tokens.size();
+
+        int tiposUtilizados
+                = contarTiposUtilizados(tokens);
+
+        int totalLineas
+                = contarLineas(codigoFuente);
+
+        int totalLexicos
+                = erroresLexicos.size();
+
+        int totalSintacticos
+                = erroresSintacticos.size();
+
+        int totalSemanticos
+                = erroresSemanticos.size();
+
+        int totalErrores
+                = totalLexicos
+                + totalSintacticos
+                + totalSemanticos;
+
+        agregarFila(
+                "Total de tokens",
+                totalTokens
+        );
+
+        agregarFila(
+                "Tipos de token utilizados",
+                tiposUtilizados
+        );
+
+        agregarFila(
+                "Lineas analizadas",
+                totalLineas
+        );
+
+        agregarFila(
+                "Errores lexicos",
+                totalLexicos
+        );
+
+        agregarFila(
+                "Errores sintacticos",
+                totalSintacticos
+        );
+
+        agregarFila(
+                "Errores semanticos",
+                totalSemanticos
+        );
+
+        agregarFila(
+                "Total de errores",
+                totalErrores
+        );
+
+        if (totalErrores == 0) {
+            agregarFila(
+                    "Estado de la compilacion",
+                    "Sin errores"
+            );
+        } else {
+            agregarFila(
+                    "Estado de la compilacion",
+                    "Con errores"
+            );
+        }
+
+        agregarFila(
+                "Frecuencia por tipo de token",
+                ""
+        );
+
+        cargarFrecuencias(
+                tokens,
+                totalTokens
+        );
+    }
+
+    private void cargarFrecuencias(
+            ArrayList<Token> tokens,
+            int totalTokens) {
+
+        TipoToken[] tipos
+                = TipoToken.values();
+
+        for (int i = 0;
+                i < tipos.length;
+                i++) {
+
+            TipoToken tipo = tipos[i];
+
+            int cantidad
+                    = contarTipo(
+                            tokens,
+                            tipo
+                    );
+
+            double porcentaje = 0.0;
+
+            if (totalTokens > 0) {
+                porcentaje
+                        = cantidad * 100.0
+                        / totalTokens;
+            }
+
+            String valor
+                    = cantidad
+                    + " ("
+                    + String.format(
+                            Locale.US,
+                            "%.2f",
+                            porcentaje
+                    )
+                    + " %)";
+
+            agregarFila(
+                    tipo.name(),
+                    valor
+            );
+        }
+    }
+
+    private int contarTipo(
+            ArrayList<Token> tokens,
+            TipoToken tipoBuscado) {
+
+        int cantidad = 0;
+
+        for (Token token : tokens) {
+
+            if (token.getTipo()
+                    == tipoBuscado) {
+
+                cantidad++;
+            }
+        }
+
+        return cantidad;
+    }
+
+    private int contarTiposUtilizados(
+            ArrayList<Token> tokens) {
+
+        int cantidad = 0;
+
+        TipoToken[] tipos
+                = TipoToken.values();
+
+        for (int i = 0;
+                i < tipos.length;
+                i++) {
+
+            if (contarTipo(
+                    tokens,
+                    tipos[i]
+            ) > 0) {
+
+                cantidad++;
+            }
+        }
+
+        return cantidad;
+    }
+
+    private int contarLineas(
+            String codigoFuente) {
+
+        if (codigoFuente.isEmpty()) {
+            return 0;
+        }
+
+        int cantidad = 1;
+
+        for (int i = 0;
+                i < codigoFuente.length();
+                i++) {
+
+            if (codigoFuente.charAt(i)
+                    == '\n') {
+
+                cantidad++;
+            }
+        }
+
+        return cantidad;
+    }
+
+    private void agregarFila(
+            String estadistica,
+            Object valor) {
+
+        modeloTabla.addRow(
+                new Object[]{
+                    estadistica,
+                    valor
+                }
+        );
     }
 
     public void limpiarTabla() {
-
         modeloTabla.setRowCount(0);
     }
 
     public javax.swing.JTable getTabla() {
-
         return jTable1;
     }
 
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

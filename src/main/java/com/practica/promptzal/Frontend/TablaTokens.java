@@ -5,7 +5,10 @@
 package com.practica.promptzal.Frontend;
 
 import com.practica.promptzal.Backend.lexer.Token;
-import java.util.List;
+import java.awt.BorderLayout;
+import java.util.ArrayList;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -14,15 +17,27 @@ import javax.swing.table.DefaultTableModel;
  */
 public class TablaTokens extends javax.swing.JInternalFrame {
 
-   private DefaultTableModel modeloTabla;
+    private JTable tablaTokens;
+    private DefaultTableModel modeloTabla;
+    private JScrollPane scrollTokens;
 
     public TablaTokens() {
-        initComponents();
-        configurarTabla();
+        configurarVentana();
+        crearComponentes();
     }
 
-    private void configurarTabla() {
+    private void configurarVentana() {
+        setTitle("Tokens");
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
+        setResizable(true);
 
+        setSize(720, 350);
+        setLayout(new BorderLayout());
+    }
+
+    private void crearComponentes() {
         modeloTabla = new DefaultTableModel(
                 new Object[][]{},
                 new String[]{
@@ -34,17 +49,31 @@ public class TablaTokens extends javax.swing.JInternalFrame {
                 }
         ) {
             @Override
-            public boolean isCellEditable(int fila, int columna) {
+            public boolean isCellEditable(
+                    int fila,
+                    int columna) {
+
                 return false;
             }
         };
 
-        jTable1.setModel(modeloTabla);
+        tablaTokens = new JTable(modeloTabla);
+
+        tablaTokens.setFillsViewportHeight(true);
+        tablaTokens.setAutoCreateRowSorter(true);
+
+        scrollTokens = new JScrollPane(tablaTokens);
+
+        add(
+                scrollTokens,
+                BorderLayout.CENTER
+        );
     }
 
-    public void cargarTokens(List<Token> tokens) {
+    public void cargarTokens(
+            ArrayList<Token> tokens) {
 
-        modeloTabla.setRowCount(0);
+        limpiar();
 
         if (tokens == null) {
             return;
@@ -52,24 +81,28 @@ public class TablaTokens extends javax.swing.JInternalFrame {
 
         for (Token token : tokens) {
 
-            modeloTabla.addRow(new Object[]{
-                token.getNumero(),
-                token.getLexema(),
-                token.getTipo(),
-                token.getFila(),
-                token.getColumna()
-            });
+            modeloTabla.addRow(
+                    new Object[]{
+                        token.getNumero(),
+                        token.getLexema(),
+                        token.getTipo().name(),
+                        token.getFila(),
+                        token.getColumna()
+                    }
+            );
         }
     }
 
-    public void limpiarTabla() {
-
+    public void limpiar() {
         modeloTabla.setRowCount(0);
     }
 
-    public javax.swing.JTable getTabla() {
+    public JTable getTablaTokens() {
+        return tablaTokens;
+    }
 
-        return jTable1;
+    public JScrollPane getScrollTokens() {
+        return scrollTokens;
     }
 
     /**
