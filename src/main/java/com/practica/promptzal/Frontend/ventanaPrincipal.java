@@ -1136,6 +1136,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
         jButtonCompilar.setBackground(new java.awt.Color(51, 51, 0));
         jButtonCompilar.setForeground(new java.awt.Color(255, 255, 255));
         jButtonCompilar.setText("COMPILAR");
+        jButtonCompilar.addActionListener(this::jButtonCompilarActionPerformed);
 
         jComboBoxReportes.setBackground(new java.awt.Color(0, 51, 51));
         jComboBoxReportes.setForeground(new java.awt.Color(255, 255, 255));
@@ -1232,6 +1233,10 @@ public class ventanaPrincipal extends javax.swing.JFrame {
     private void jButtonGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonGuardarActionPerformed
         guardarArchivo();
     }//GEN-LAST:event_jButtonGuardarActionPerformed
+
+    private void jButtonCompilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCompilarActionPerformed
+  
+    }//GEN-LAST:event_jButtonCompilarActionPerformed
 
     /**
      * @param args the command line arguments

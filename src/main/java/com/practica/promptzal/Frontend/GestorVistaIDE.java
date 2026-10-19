@@ -175,12 +175,14 @@ public class GestorVistaIDE {
         });
     }
 
+    
     private void mostrarEstadoInicial() {
         exploradorVisible = false;
         promptVisible = false;
         resultadosVisible = false;
     }
 
+    
     public void alternarExplorador() { mostrarExplorador(!exploradorVisible); }
 
     public void mostrarExplorador(boolean mostrar) {
@@ -267,6 +269,7 @@ public class GestorVistaIDE {
         arbolArchivos.setModel(new DefaultTreeModel(raiz));
     }
 
+    
     public void actualizarEstado(String estado) {
         lblEstadoCompilacion.setText((estado == null ? "Listo" : estado) + " ");
     }
