@@ -47,25 +47,12 @@ public class AnalizadorSemantico {
         for (Agente agente : programa.getAgentes()) {
 
             if (tablaSimbolos.existeAgente(agente.getNombre())) {
-                errores.add(
-                        new ErrorSemantico(
-                                "El agente '" + agente.getNombre()
-                                + "' ya fue declarado.",
-                                agente.getLinea()
-                        )
-                );
-
+                errores.add( new ErrorSemantico( "El agente '" + agente.getNombre() + "' ya fue declarado.", agente.getLinea() ));
                 continue;
             }
 
             tablaSimbolos.agregarSimbolo(
-                    new Simbolo(
-                            agente.getNombre(),
-                            "AGENTE",
-                            "GLOBAL",
-                            agente.getLinea()
-                    )
-            );
+                    new Simbolo( agente.getNombre(), "AGENTE","GLOBAL",agente.getLinea()) );
         }
     }
 
@@ -77,7 +64,6 @@ public class AnalizadorSemantico {
             if (agentesAnalizados.contains(agente.getNombre())) {
                 continue;
             }
-
             agentesAnalizados.add(agente.getNombre());
 
             analizarVariables(agente);
@@ -88,58 +74,30 @@ public class AnalizadorSemantico {
     private void analizarVariables(Agente agente) {
         for (Variable variable : agente.getVariables()) {
 
-            validarExpresion(
-                    variable.getExpresion(),
-                    agente.getNombre(),
-                    false
-            );
+            validarExpresion(variable.getExpresion(), agente.getNombre(),false );
 
             tablaSimbolos.agregarSimbolo(
-                    new Simbolo(
-                            variable.getNombre(),
-                            "VARIABLE_DECLARADA",
-                            agente.getNombre(),
-                            variable.getLinea()
-                    )
-            );
+                    new Simbolo( variable.getNombre(),"VARIABLE_DECLARADA",agente.getNombre(),  variable.getLinea() ) );
         }
     }
 
     private void analizarComandos(Agente agente) {
         for (Comando comando : agente.getComandos()) {
 
-            boolean ignorarPrimerId
-                    = comando.getTipo().equals("GENERAR");
+            boolean ignorarPrimerId = comando.getTipo().equals("GENERAR");
 
-            validarExpresion(
-                    comando.getExpresionPrincipal(),
-                    agente.getNombre(),
-                    ignorarPrimerId
-            );
+            validarExpresion(comando.getExpresionPrincipal(),agente.getNombre(), ignorarPrimerId);
 
             for (ConectorComando conector : comando.getConectores()) {
-                validarExpresion(
-                        conector.getExpresion(),
-                        agente.getNombre(),
-                        false
-                );
+                validarExpresion(conector.getExpresion(),agente.getNombre(), false     );
             }
 
             tablaSimbolos.agregarSimbolo(
-                    new Simbolo(
-                            comando.getVariableDestino(),
-                            "RESULTADO_COMANDO",
-                            agente.getNombre(),
-                            comando.getLinea()
-                    )
-            );
+                    new Simbolo( comando.getVariableDestino(), "RESULTADO_COMANDO",agente.getNombre(),comando.getLinea()));
         }
     }
 
-    private void validarExpresion(
-            Expresiones expresion,
-            String ambito,
-            boolean ignorarPrimerId) {
+    private void validarExpresion(Expresiones expresion, String ambito, boolean ignorarPrimerId) {
 
         if (expresion == null) {
             return;

@@ -37,6 +37,7 @@ public class PruebaParser {
 
         EJECUTAR analista
         EXPORTAR resumen
+                        valor de prueba ahora vamos como esta 
         """;
 
         probar(codigo);
