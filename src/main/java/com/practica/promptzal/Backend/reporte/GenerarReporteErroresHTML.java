@@ -84,44 +84,7 @@ public class GenerarReporteErroresHTML {
         }
     }
 
-    // Metodo temporal para mantener compatibilidad
-    // con la interfaz anterior del Proyecto 1
-    public void generar(
-            ErrorLexico[] errores,
-            int cantidadErrores,
-            String rutaSalida) {
-
-        ArrayList<ErrorLexico> erroresLexicos
-                = new ArrayList<>();
-
-        if (errores != null) {
-
-            for (int i = 0;
-                    i < cantidadErrores
-                    && i < errores.length;
-                    i++) {
-
-                if (errores[i] != null) {
-                    erroresLexicos.add(
-                            errores[i]
-                    );
-                }
-            }
-        }
-
-        ArrayList<ErrorSintactico> erroresSintacticos
-                = new ArrayList<>();
-
-        ArrayList<ErrorSemantico> erroresSemanticos
-                = new ArrayList<>();
-
-        generar(
-                erroresLexicos,
-                erroresSintacticos,
-                erroresSemanticos,
-                rutaSalida
-        );
-    }
+    
 
     private void crearCarpetaSalida(String rutaSalida) {
         File archivo = new File(rutaSalida);
@@ -135,10 +98,7 @@ public class GenerarReporteErroresHTML {
         }
     }
 
-    private String construirHTML(
-            ArrayList<ErrorLexico> erroresLexicos,
-            ArrayList<ErrorSintactico> erroresSintacticos,
-            ArrayList<ErrorSemantico> erroresSemanticos) {
+    private String construirHTML(ArrayList<ErrorLexico> erroresLexicos,  ArrayList<ErrorSintactico> erroresSintacticos,   ArrayList<ErrorSemantico> erroresSemanticos) {
 
         StringBuilder html = new StringBuilder();
 
@@ -146,9 +106,7 @@ public class GenerarReporteErroresHTML {
         int totalSintacticos = erroresSintacticos.size();
         int totalSemanticos = erroresSemanticos.size();
 
-        int totalErrores = totalLexicos
-                + totalSintacticos
-                + totalSemanticos;
+        int totalErrores = totalLexicos+ totalSintacticos+ totalSemanticos;
 
         html.append("<!DOCTYPE html>\n");
         html.append("<html lang=\"es\">\n");
@@ -162,13 +120,7 @@ public class GenerarReporteErroresHTML {
 
         html.append("<section class=\"contenido\">\n");
 
-        agregarResumen(
-                html,
-                totalErrores,
-                totalLexicos,
-                totalSintacticos,
-                totalSemanticos
-        );
+        agregarResumen( html, totalErrores,totalLexicos, totalSintacticos, totalSemanticos );
 
         if (totalErrores == 0) {
 
@@ -176,18 +128,8 @@ public class GenerarReporteErroresHTML {
 
         } else {
 
-            agregarHerramientas(
-                    html,
-                    totalErrores
-            );
-
-            agregarTabla(
-                    html,
-                    erroresLexicos,
-                    erroresSintacticos,
-                    erroresSemanticos
-            );
-
+            agregarHerramientas(html, totalErrores);
+            agregarTabla( html, erroresLexicos, erroresSintacticos,erroresSemanticos);
             agregarMensajeSinResultados(html);
         }
 
@@ -406,35 +348,21 @@ public class GenerarReporteErroresHTML {
 
         for (ErrorLexico error : erroresLexicos) {
 
-            agregarFilaLexica(
-                    html,
-                    error,
-                    numero
-            );
+            agregarFilaLexica(   html, error, numero  );
 
             numero++;
         }
 
-        for (ErrorSintactico error
-                : erroresSintacticos) {
+        for (ErrorSintactico error : erroresSintacticos) {
 
-            agregarFilaSintactica(
-                    html,
-                    error,
-                    numero
-            );
+            agregarFilaSintactica(html,error, numero);
 
             numero++;
         }
 
-        for (ErrorSemantico error
-                : erroresSemanticos) {
+        for (ErrorSemantico error: erroresSemanticos) {
 
-            agregarFilaSemantica(
-                    html,
-                    error,
-                    numero
-            );
+            agregarFilaSemantica( html,error, numero);
 
             numero++;
         }
@@ -446,61 +374,28 @@ public class GenerarReporteErroresHTML {
         html.append("</div>\n");
     }
 
-    private void agregarFilaLexica(
-            StringBuilder html,
-            ErrorLexico error,
-            int numero) {
+    private void agregarFilaLexica(StringBuilder html, ErrorLexico error, int numero) {
 
-        abrirFila(
-                html,
-                "LEXICO",
-                error.getFila(),
-                String.valueOf(error.getColumna())
-        );
+        abrirFila( html,   "LEXICO", error.getFila(), String.valueOf(error.getColumna()) );
 
-        agregarNumero(
-                html,
-                numero
-        );
+        agregarNumero( html,  numero );
 
-        agregarTipo(
-                html,
-                "LEXICO",
-                "tipo-lexico"
-        );
+        agregarTipo(  html,"LEXICO",  "tipo-lexico");
 
-        agregarDescripcion(
-                html,
-                error.getDescripcion()
-        );
+        agregarDescripcion(html,   error.getDescripcion() );
 
-        agregarPosicion(
-                html,
-                error.getFila(),
-                String.valueOf(error.getColumna())
-        );
+        agregarPosicion( html, error.getFila(), String.valueOf(error.getColumna()));
 
-        agregarToken(
-                html,
-                error.getLexema()
-        );
+        agregarToken( html, error.getLexema()  );
 
         agregarVacio(html);
 
         cerrarFila(html);
     }
 
-    private void agregarFilaSintactica(
-            StringBuilder html,
-            ErrorSintactico error,
-            int numero) {
+    private void agregarFilaSintactica(StringBuilder html,ErrorSintactico error, int numero) {
 
-        abrirFila(
-                html,
-                "SINTACTICO",
-                error.getFila(),
-                String.valueOf(error.getColumna())
-        );
+        abrirFila(html,"SINTACTICO",error.getFila(), String.valueOf(error.getColumna()) );
 
         agregarNumero(
                 html,
