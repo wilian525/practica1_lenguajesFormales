@@ -284,7 +284,4 @@ public class GestorVistaIDE {
     public TablaSimbolos getTablaSimbolos() { return tablaSimbolos; }
     public TablaSalida getTablaSalida() { return tablaSalida; }
     public JDesktopPane getDesktopResultados() { return desktopResultados; }
-    public boolean isExploradorVisible() { return exploradorVisible; }
-    public boolean isPromptVisible() { return promptVisible; }
-    public boolean isResultadosVisible() { return resultadosVisible; }
 }

@@ -46,16 +46,6 @@ public class TablaSalida extends javax.swing.JInternalFrame {
         );
     }
 
-    public void establecerTexto(String texto) {
-        if (texto == null) {
-            txtSalida.setText("");
-            return;
-        }
-
-        txtSalida.setText(texto);
-        txtSalida.setCaretPosition(0);
-    }
-
     public void limpiarSalida() {
         txtSalida.setText("");
     }

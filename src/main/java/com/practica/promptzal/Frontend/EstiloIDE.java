@@ -22,6 +22,7 @@ public class EstiloIDE {
     private final Color azulOscuro = new Color(31, 111, 235);
     private final Color verde = new Color(63, 185, 80);
     private final Color rojo = new Color(248, 81, 73);
+    private final Color verdeLinea = new Color(86, 211, 100);
     private final Font fuente = new Font("SansSerif", Font.PLAIN, 13);
     private final Font fuenteEditor = new Font("Monospaced", Font.PLAIN, 14);
 
@@ -94,7 +95,9 @@ public class EstiloIDE {
     private void aplicarComponente(Component componente) {
         componente.setFont(fuente);
 
-        if (componente instanceof JPanel panelActual) panelActual.setBackground(fondo);
+        if (componente instanceof JPanel panelActual) {
+            panelActual.setBackground(fondo);
+        }
         if (componente instanceof JToolBar barra) {
             barra.setBackground(panel);
             barra.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, borde));
@@ -105,7 +108,9 @@ public class EstiloIDE {
             label.setBorder(new EmptyBorder(6, 8, 6, 8));
         }
 
-        if (componente instanceof JButton boton) estilizarBoton(boton);
+        if (componente instanceof JButton boton) {
+            estilizarBoton(boton);
+        }
 
         if (componente instanceof JScrollPane scroll) {
             scroll.setBorder(BorderFactory.createLineBorder(borde));
@@ -123,8 +128,11 @@ public class EstiloIDE {
             split.setBorder(null);
         }
 
-        if (componente instanceof Container contenedor)
-            for (Component hijo : contenedor.getComponents()) aplicarComponente(hijo);
+        if (componente instanceof Container contenedor) {
+            for (Component hijo : contenedor.getComponents()) {
+                aplicarComponente(hijo);
+            }
+        }
     }
 
     private void estilizarEditor(JTextArea area) {
@@ -142,17 +150,28 @@ public class EstiloIDE {
         tabla.setForeground(texto);
         tabla.setSelectionBackground(azulOscuro);
         tabla.setSelectionForeground(Color.WHITE);
-        tabla.setGridColor(borde);
-        tabla.setRowHeight(25);
+        tabla.setGridColor(verdeLinea);
+        tabla.setRowHeight(27);
+        tabla.setShowHorizontalLines(true);
         tabla.setShowVerticalLines(false);
         tabla.setIntercellSpacing(new Dimension(0, 1));
         tabla.setFont(fuente);
 
         JTableHeader header = tabla.getTableHeader();
+        header.setOpaque(true);
         header.setBackground(panelClaro);
         header.setForeground(azul);
         header.setFont(new Font("SansSerif", Font.BOLD, 12));
-        header.setPreferredSize(new Dimension(header.getWidth(), 28));
+        header.setPreferredSize(new Dimension(header.getWidth(), 30));
+        header.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, verdeLinea));
+
+        JScrollPane scroll = (JScrollPane) SwingUtilities.getAncestorOfClass(
+                JScrollPane.class, tabla
+        );
+
+        if (scroll != null) {
+            scroll.setBorder(BorderFactory.createLineBorder(verdeLinea));
+        }
     }
 
     private void estilizarBoton(JButton boton) {
@@ -190,7 +209,9 @@ public class EstiloIDE {
         boton.setBackground(verde);
         boton.setForeground(Color.WHITE);
 
-        for (MouseListener listener : boton.getMouseListeners()) boton.removeMouseListener(listener);
+        for (MouseListener listener : boton.getMouseListeners()) {
+            boton.removeMouseListener(listener);
+        }
 
         boton.addMouseListener(new MouseAdapter() {
             @Override
@@ -222,8 +243,19 @@ public class EstiloIDE {
         label.setForeground(textoSecundario);
     }
 
-    public Color getFondo() { return fondo; }
-    public Color getPanel() { return panel; }
-    public Color getAzul() { return azul; }
-    public Color getVerde() { return verde; }
+    public Color getFondo() {
+        return fondo;
+    }
+
+    public Color getPanel() {
+        return panel;
+    }
+
+    public Color getAzul() {
+        return azul;
+    }
+
+    public Color getVerde() {
+        return verde;
+    }
 }

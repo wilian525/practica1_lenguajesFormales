@@ -101,9 +101,6 @@ public class TablaTokens extends javax.swing.JInternalFrame {
         return tablaTokens;
     }
 
-    public JScrollPane getScrollTokens() {
-        return scrollTokens;
-    }
 
     /**
      * This method is called from within the constructor to initialize the form.

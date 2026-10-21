@@ -63,34 +63,4 @@ public class GestorArchivo {
         return ruta.resolveSibling(nombre + ".pz");
     }
     
-    public Path asegurarExtencionHTML(Path ruta){
-            if (ruta == null) {
-                throw new IllegalArgumentException("La ruta no puede ser nula.");
-        }
-            String nombre = ruta.getFileName().toString();
-            if (nombre.toLowerCase().endsWith(".html")) {
-              return ruta;
-        }
-            return ruta.resolveSibling(nombre + ".html");
-    }
-  
-    public Path creerCarpetaReportes(String rutaArchivo) throws IOException{
-        Path archivo = Path.of(rutaArchivo).toAbsolutePath().normalize();
-        Path carpetaArchivo = archivo.getParent();
-        Path carpetaReportes = carpetaArchivo.resolve("reportes");
-        Files.createDirectories(carpetaReportes);
-        return carpetaReportes;
-    }
-    
-    public String obtenerNombreArchivo(Path ruta){
-         if (ruta == null || ruta.getFileName() == null) {
-              return "";
-        }
-        String nombre = ruta.getFileName().toString();
-        
-        if (nombre.toLowerCase().endsWith(".pz")) {
-            return nombre.substring(0,nombre.length() - 3);
-        }
-        return nombre;
-    }
 }
