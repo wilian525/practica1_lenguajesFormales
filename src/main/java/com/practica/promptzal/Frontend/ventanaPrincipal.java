@@ -260,11 +260,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
         JFileChooser selector = new JFileChooser();
 
         selector.setDialogTitle("Abrir archivo PromptZal");
-        selector.setFileFilter(
-                new FileNameExtensionFilter(
-                        "Archivos PromptZal (*.pz)",
-                        "pz"
-                )
+        selector.setFileFilter( new FileNameExtensionFilter( "Archivos PromptZal (*.pz)", "pz")
         );
 
         if (selector.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
@@ -293,9 +289,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
 
             limpiarCompilacion();
 
-            gestorVista.actualizarArchivo(
-                    rutaActual.getFileName().toString()
-            );
+            gestorVista.actualizarArchivo( rutaActual.getFileName().toString() );
 
             gestorVista.actualizarEstado("Archivo abierto");
 
@@ -303,10 +297,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
 
         } catch (IOException ex) {
             actualizandoEditor = false;
-            mostrarError(
-                    "No se pudo abrir el archivo: "
-                    + ex.getMessage()
-            );
+            mostrarError( "No se pudo abrir el archivo: " + ex.getMessage() );
         }
     }
 
@@ -318,15 +309,10 @@ public class ventanaPrincipal extends javax.swing.JFrame {
 
             selector.setDialogTitle("Guardar archivo PromptZal");
             selector.setFileFilter(
-                    new FileNameExtensionFilter(
-                            "Archivos PromptZal (*.pz)",
-                            "pz"
-                    )
+                    new FileNameExtensionFilter( "Archivos PromptZal (*.pz)","pz" )
             );
 
-            selector.setSelectedFile(
-                    new File("archivo.pz")
-            );
+            selector.setSelectedFile( new File("archivo.pz") );
 
             if (selector.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
                 return false;
@@ -336,16 +322,11 @@ public class ventanaPrincipal extends javax.swing.JFrame {
         }
 
         try {
-            rutaActual = gestorArchivo.guardarArchivo(
-                    destino,
-                    gestorVista.getTxtEditor().getText()
-            ).toAbsolutePath().normalize();
+            rutaActual = gestorArchivo.guardarArchivo(destino,gestorVista.getTxtEditor().getText()).toAbsolutePath().normalize();
 
             cambiosSinGuardar = false;
 
-            gestorVista.actualizarArchivo(
-                    rutaActual.getFileName().toString()
-            );
+            gestorVista.actualizarArchivo(rutaActual.getFileName().toString());
 
             gestorVista.actualizarEstado("Archivo guardado");
 
@@ -355,9 +336,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
 
         } catch (IOException | IllegalArgumentException ex) {
             mostrarError(
-                    "No se pudo guardar el archivo: "
-                    + ex.getMessage()
-            );
+                    "No se pudo guardar el archivo: "+ ex.getMessage());
 
             return false;
         }
@@ -366,16 +345,10 @@ public class ventanaPrincipal extends javax.swing.JFrame {
     private boolean confirmarCambiosPendientes() {
         if (!cambiosSinGuardar) return true;
 
-        int opcion = JOptionPane.showConfirmDialog(
-                this,
-                "Hay cambios sin guardar. ¿Deseas guardarlos?",
-                "PromptZal",
-                JOptionPane.YES_NO_CANCEL_OPTION,
-                JOptionPane.WARNING_MESSAGE
-        );
+        int opcion = JOptionPane.showConfirmDialog( this, "Hay cambios sin guardar. ¿Deseas guardarlos?","PromptZal",
+                JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.WARNING_MESSAGE );
 
-        if (opcion == JOptionPane.CANCEL_OPTION
-                || opcion == JOptionPane.CLOSED_OPTION) {
+        if (opcion == JOptionPane.CANCEL_OPTION|| opcion == JOptionPane.CLOSED_OPTION) {
             return false;
         }
 
@@ -396,7 +369,6 @@ public class ventanaPrincipal extends javax.swing.JFrame {
         }
 
         gestorVista.actualizarEstado("Cambios sin compilar");
-
         actualizarTitulo();
     }
 
@@ -409,11 +381,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
             nombre = rutaActual.getFileName().toString();
         }
 
-        setTitle(
-                "PromptZal IDE - "
-                + nombre
-                + (cambiosSinGuardar ? " *" : "")
-        );
+        setTitle("PromptZal IDE - "+ nombre + (cambiosSinGuardar ? " *" : ""));
     }
 
     private void compilar() {
