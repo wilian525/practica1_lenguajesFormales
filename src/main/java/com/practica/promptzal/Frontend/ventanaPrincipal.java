@@ -480,14 +480,11 @@ public class ventanaPrincipal extends javax.swing.JFrame {
                     + erroresSintacticosActuales.size()
                     + erroresSemanticosActuales.size();
 
-            if (totalErrores == 0
-                    && programaActual != null) {
+            if (totalErrores == 0 && programaActual != null) {
 
-                GeneradorPromptzal generador
-                        = new GeneradorPromptzal();
+                GeneradorPromptzal generador  = new GeneradorPromptzal();
 
-                String prompt
-                        = generador.generar(
+                String prompt = generador.generar(
                                 programaActual
                         );
 
@@ -622,10 +619,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
     }
 
     private void guardarPrompt() {
-        String prompt
-                = gestorVista
-                        .getTxtPromptGenerado()
-                        .getText();
+        String prompt = gestorVista .getTxtPromptGenerado() .getText();
 
         if (prompt.isBlank()) {
             mostrarAdvertencia(
@@ -636,14 +630,12 @@ public class ventanaPrincipal extends javax.swing.JFrame {
 
         JFileChooser selector = new JFileChooser();
 
-        FileNameExtensionFilter filtroMd
-                = new FileNameExtensionFilter(
+        FileNameExtensionFilter filtroMd = new FileNameExtensionFilter(
                         "Markdown (*.md)",
                         "md"
                 );
 
-        FileNameExtensionFilter filtroTxt
-                = new FileNameExtensionFilter(
+        FileNameExtensionFilter filtroTxt= new FileNameExtensionFilter(
                         "Texto (*.txt)",
                         "txt"
                 );
@@ -655,12 +647,10 @@ public class ventanaPrincipal extends javax.swing.JFrame {
         selector.addChoosableFileFilter(filtroTxt);
         selector.setFileFilter(filtroMd);
 
-        selector.setSelectedFile(
-                new File("prompt_generado.md")
+        selector.setSelectedFile(new File("prompt_generado.md")
         );
 
-        if (selector.showSaveDialog(this)
-                != JFileChooser.APPROVE_OPTION) {
+        if (selector.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
         }
 
@@ -672,41 +662,24 @@ public class ventanaPrincipal extends javax.swing.JFrame {
             extension = "md";
         }
 
-        Path destino = asegurarExtension(
-                selector.getSelectedFile().toPath(),
-                extension
-        );
+        Path destino = asegurarExtension(selector.getSelectedFile().toPath(), extension );
 
         try {
-            Files.writeString(
-                    destino,
-                    prompt,
-                    StandardCharsets.UTF_8
-            );
+            Files.writeString( destino, prompt,StandardCharsets.UTF_8 );
 
-            gestorVista.actualizarEstado(
-                    "Prompt guardado"
-            );
+            gestorVista.actualizarEstado("Prompt guardado" );
 
             JOptionPane.showMessageDialog(
-                    this,
-                    "Prompt guardado correctamente.",
-                    "PromptZal",
-                    JOptionPane.INFORMATION_MESSAGE
+                    this,"Prompt guardado correctamente.", "PromptZal", JOptionPane.INFORMATION_MESSAGE
             );
 
         } catch (IOException ex) {
-            mostrarError(
-                    "No se pudo guardar el prompt: "
-                    + ex.getMessage()
-            );
+            mostrarError( "No se pudo guardar el prompt: " + ex.getMessage());
         }
     }
 
     private void exportarReporte() {
-        String opcion
-                = (String) jComboBoxReportes
-                        .getSelectedItem();
+        String opcion = (String) jComboBoxReportes .getSelectedItem();
 
         if (opcion == null) return;
 
@@ -716,9 +689,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
         }
 
         if (!compilacionDisponible) {
-            mostrarAdvertencia(
-                    "Primero debes compilar el codigo para generar este reporte."
-            );
+            mostrarAdvertencia( "Primero debes compilar el codigo para generar este reporte." );
             return;
         }
 
@@ -728,13 +699,9 @@ public class ventanaPrincipal extends javax.swing.JFrame {
         boolean incluyeImagenAST = false;
 
         switch (opcion) {
-            case "Reporte AST" -> {
-                GeneradorReporteAST reporte
-                        = new GeneradorReporteAST();
+            case "Reporte AST" -> {GeneradorReporteAST reporte= new GeneradorReporteAST();
 
-                generado = reporte.generar(
-                        programaActual
-                );
+                generado = reporte.generar(programaActual );
 
                 ruta = reporte.getRutaReporte();
                 nombre = "reporte_ast.html";
@@ -742,15 +709,9 @@ public class ventanaPrincipal extends javax.swing.JFrame {
             }
 
             case "Reporte de Simbolos" -> {
-                GeneradorReporteSimbolos reporte
-                        = new GeneradorReporteSimbolos();
+                GeneradorReporteSimbolos reporte  = new GeneradorReporteSimbolos();
 
-                generado
-                        = semanticoActual != null
-                        && reporte.generar(
-                                semanticoActual
-                                        .getTablaSimbolos()
-                        );
+                generado = semanticoActual != null && reporte.generar(semanticoActual .getTablaSimbolos());
 
                 ruta = reporte.getRutaReporte();
                 nombre = "tabla_simbolos.html";
@@ -835,227 +796,115 @@ public class ventanaPrincipal extends javax.swing.JFrame {
                 )
         );
 
-        selector.setSelectedFile(
-                new File(nombreSugerido)
-        );
+        selector.setSelectedFile(new File(nombreSugerido) );
 
         if (selector.showSaveDialog(this)
                 != JFileChooser.APPROVE_OPTION) {
             return;
         }
 
-        Path origen
-                = Path.of(rutaOrigen)
-                        .toAbsolutePath()
-                        .normalize();
+        Path origen = Path.of(rutaOrigen) .toAbsolutePath() .normalize();
 
-        Path destino
-                = asegurarExtension(
-                        selector.getSelectedFile().toPath(),
-                        "html"
-                )
-                        .toAbsolutePath()
-                        .normalize();
+        Path destino = asegurarExtension(selector.getSelectedFile().toPath(), "html" ) .toAbsolutePath() .normalize();
 
         try {
-            copiarSiEsDistinto(
-                    origen,
-                    destino
-            );
+            copiarSiEsDistinto(origen,destino);
 
             if (incluyeImagenAST) {
-                Path imagenOrigen
-                        = origen.getParent()
-                                .resolve(
-                                        "ast_promptzal.png"
-                                );
+                Path imagenOrigen = origen.getParent() .resolve("ast_promptzal.png");
 
-                Path imagenDestino
-                        = destino.getParent()
-                                .resolve(
-                                        "ast_promptzal.png"
-                                );
+                Path imagenDestino = destino.getParent().resolve("ast_promptzal.png");
 
                 if (Files.exists(imagenOrigen)) {
-                    copiarSiEsDistinto(
-                            imagenOrigen,
-                            imagenDestino
-                    );
+                    copiarSiEsDistinto( imagenOrigen,imagenDestino );
                 }
             }
 
-            gestorVista.actualizarEstado(
-                    "Reporte exportado"
-            );
+            gestorVista.actualizarEstado("Reporte exportado");
 
             JOptionPane.showMessageDialog(
-                    this,
-                    "Reporte guardado correctamente.",
-                    "PromptZal",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
+                    this, "Reporte guardado correctamente.", "PromptZal",JOptionPane.INFORMATION_MESSAGE);
 
         } catch (IOException ex) {
-            mostrarError(
-                    "No se pudo guardar el reporte: "
-                    + ex.getMessage()
-            );
+            mostrarError("No se pudo guardar el reporte: " + ex.getMessage() );
         }
     }
 
     private void exportarAFD() {
-        GeneradorAFD generador
-                = new GeneradorAFD();
+        GeneradorAFD generador = new GeneradorAFD();
 
         if (!generador.generar()) {
-            mostrarError(
-                    "No se pudo generar el AFD. "
-                    + "Verifica que Graphviz este instalado."
-            );
+            mostrarError("No se pudo generar el AFD. "+ "Verifica que Graphviz este instalado." );
             return;
         }
 
-        JFileChooser selector
-                = new JFileChooser();
+        JFileChooser selector = new JFileChooser();
 
-        selector.setDialogTitle(
-                "Guardar AFD"
-        );
+        selector.setDialogTitle( "Guardar AFD"    );
 
-        selector.setFileFilter(
-                new FileNameExtensionFilter(
-                        "Imagen PNG (*.png)",
-                        "png"
-                )
-        );
+        selector.setFileFilter( new FileNameExtensionFilter("Imagen PNG (*.png)", "png" ));
 
-        selector.setSelectedFile(
-                new File("afd_promptzal.png")
-        );
+        selector.setSelectedFile( new File("afd_promptzal.png") );
 
-        if (selector.showSaveDialog(this)
-                != JFileChooser.APPROVE_OPTION) {
+        if (selector.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
             return;
         }
 
-        Path destinoImagen
-                = asegurarExtension(
-                        selector.getSelectedFile().toPath(),
-                        "png"
-                )
-                        .toAbsolutePath()
-                        .normalize();
+        Path destinoImagen = asegurarExtension(selector.getSelectedFile().toPath(),"png"  ).toAbsolutePath() .normalize();
 
-        String nombre
-                = destinoImagen
-                        .getFileName()
-                        .toString();
+        String nombre = destinoImagen .getFileName().toString();
 
-        String base
-                = nombre.substring(
-                        0,
-                        nombre.length() - 4
-                );
+        String base = nombre.substring( 0,nombre.length() - 4 );
 
-        Path destinoDot
-                = destinoImagen.resolveSibling(
-                        base + ".dot"
-                );
+        Path destinoDot= destinoImagen.resolveSibling(base + ".dot" );
 
         try {
             copiarSiEsDistinto(
-                    Path.of(
-                            generador.getRutaImagen()
-                    )
-                            .toAbsolutePath()
-                            .normalize(),
-                    destinoImagen
-            );
+                    Path.of( generador.getRutaImagen() ) .toAbsolutePath() .normalize(),  destinoImagen);
 
             copiarSiEsDistinto(
-                    Path.of(
-                            generador.getRutaDot()
-                    )
-                            .toAbsolutePath()
-                            .normalize(),
-                    destinoDot
-            );
+                    Path.of( generador.getRutaDot() ).toAbsolutePath() .normalize(), destinoDot);
 
-            gestorVista.actualizarEstado(
-                    "AFD exportado"
-            );
+            gestorVista.actualizarEstado("AFD exportado" );
 
-            JOptionPane.showMessageDialog(
-                    this,
-                    "AFD guardado correctamente.",
-                    "PromptZal",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
+            JOptionPane.showMessageDialog( this,
+                    "AFD guardado correctamente.", "PromptZal", JOptionPane.INFORMATION_MESSAGE);
 
         } catch (IOException ex) {
-            mostrarError(
-                    "No se pudo guardar el AFD: "
-                    + ex.getMessage()
-            );
+            mostrarError("No se pudo guardar el AFD: "+ ex.getMessage() );
         }
     }
 
-    private Path asegurarExtension(
-            Path ruta,
-            String extension) {
+    private Path asegurarExtension( Path ruta, String extension) {
 
-        String nombre
-                = ruta.getFileName()
-                        .toString();
+        String nombre = ruta.getFileName() .toString();
 
-        if (nombre.toLowerCase()
-                .endsWith(
-                        "." + extension.toLowerCase()
-                )) {
-
+        if (nombre.toLowerCase() .endsWith(  "." + extension.toLowerCase() )) {
             return ruta;
         }
 
-        return ruta.resolveSibling(
-                nombre + "." + extension
-        );
+        return ruta.resolveSibling(nombre + "." + extension);
     }
 
-    private void copiarSiEsDistinto(
-            Path origen,
-            Path destino) throws IOException {
+    private void copiarSiEsDistinto(Path origen,Path destino) throws IOException {
 
         if (destino.getParent() != null) {
-            Files.createDirectories(
-                    destino.getParent()
-            );
+            Files.createDirectories( destino.getParent());
         }
 
         if (!origen.equals(destino)) {
-            Files.copy(
-                    origen,
-                    destino,
-                    StandardCopyOption.REPLACE_EXISTING
-            );
+            Files.copy(origen, destino,StandardCopyOption.REPLACE_EXISTING);
         }
     }
 
     private void mostrarAdvertencia(String mensaje) {
-        JOptionPane.showMessageDialog(
-                this,
-                mensaje,
-                "PromptZal",
-                JOptionPane.WARNING_MESSAGE
+        JOptionPane.showMessageDialog( this, mensaje, "PromptZal",JOptionPane.WARNING_MESSAGE
         );
     }
 
     private void mostrarError(String mensaje) {
         JOptionPane.showMessageDialog(
-                this,
-                mensaje,
-                "PromptZal",
-                JOptionPane.ERROR_MESSAGE
-        );
+                this,mensaje, "PromptZal", JOptionPane.ERROR_MESSAGE);
     }
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -1111,6 +960,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
         jComboBoxReportes.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Exportar ReporteAST", "Exportar ReporteSimbolos", "Exportar ReportesErrores", "Exportar ReportesEstadistica", "Exportar ReportesTokens" }));
 
         jButtonExportar.setText("EXPORTAR");
+        jButtonExportar.addActionListener(this::jButtonExportarActionPerformed);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -1205,6 +1055,10 @@ public class ventanaPrincipal extends javax.swing.JFrame {
     private void jButtonCompilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCompilarActionPerformed
   
     }//GEN-LAST:event_jButtonCompilarActionPerformed
+
+    private void jButtonExportarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonExportarActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButtonExportarActionPerformed
 
     /**
      * @param args the command line arguments
