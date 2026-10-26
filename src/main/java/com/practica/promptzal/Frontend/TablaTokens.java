@@ -49,10 +49,7 @@ public class TablaTokens extends javax.swing.JInternalFrame {
                 }
         ) {
             @Override
-            public boolean isCellEditable(
-                    int fila,
-                    int columna) {
-
+            public boolean isCellEditable(  int fila,  int columna) {
                 return false;
             }
         };
@@ -64,14 +61,10 @@ public class TablaTokens extends javax.swing.JInternalFrame {
 
         scrollTokens = new JScrollPane(tablaTokens);
 
-        add(
-                scrollTokens,
-                BorderLayout.CENTER
-        );
+        add( scrollTokens, BorderLayout.CENTER);
     }
 
-    public void cargarTokens(
-            ArrayList<Token> tokens) {
+    public void cargarTokens( ArrayList<Token> tokens) {
 
         limpiar();
 

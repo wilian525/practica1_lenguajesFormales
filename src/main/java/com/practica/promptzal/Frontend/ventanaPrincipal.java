@@ -400,10 +400,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
         );
 
         try {
-            Lexer lexer = new Lexer(
-                    new StringReader(codigo)
-            );
-
+            Lexer lexer = new Lexer(new StringReader(codigo) );
             Token token;
 
             do {
@@ -413,42 +410,23 @@ public class ventanaPrincipal extends javax.swing.JFrame {
                     tokensActuales.add(token);
                 }
 
-            } while (token != null
-                    && token.getTipo() != TipoToken.EOF);
+            } while (token != null && token.getTipo() != TipoToken.EOF);
 
-            erroresLexicosActuales.addAll(
-                    lexer.getErrores()
-            );
+            erroresLexicosActuales.addAll( lexer.getErrores());
 
-            gestorVista.getTablaSalida().agregarMensaje(
-                    "[Lexer] "
-                    + tokensActuales.size()
-                    + " tokens reconocidos."
-            );
+            gestorVista.getTablaSalida().agregarMensaje("[Lexer] "+ tokensActuales.size()+ " tokens reconocidos.");
 
-            gestorVista.getTablaSalida().agregarMensaje(
-                    "[Lexer] "
-                    + erroresLexicosActuales.size()
-                    + " errores."
-            );
+            gestorVista.getTablaSalida().agregarMensaje( "[Lexer] "+ erroresLexicosActuales.size() + " errores." );
 
             Parser parser = new Parser(tokensActuales);
 
             programaActual = parser.parsear();
 
-            erroresSintacticosActuales.addAll(
-                    parser.getErrores()
-            );
+            erroresSintacticosActuales.addAll(parser.getErrores() );
 
-            gestorVista.getTablaSalida().agregarMensaje(
-                    "[Parser] Analisis sintactico finalizado."
-            );
+            gestorVista.getTablaSalida().agregarMensaje( "[Parser] Analisis sintactico finalizado." );
 
-            gestorVista.getTablaSalida().agregarMensaje(
-                    "[Parser] "
-                    + erroresSintacticosActuales.size()
-                    + " errores."
-            );
+            gestorVista.getTablaSalida().agregarMensaje("[Parser] " + erroresSintacticosActuales.size()+ " errores." );
 
             semanticoActual = new AnalizadorSemantico();
 
@@ -464,78 +442,41 @@ public class ventanaPrincipal extends javax.swing.JFrame {
                     "[Semantico] Analisis finalizado."
             );
 
-            gestorVista.getTablaSalida().agregarMensaje(
-                    "[Semantico] "
-                    + erroresSemanticosActuales.size()
-                    + " errores."
-            );
+            gestorVista.getTablaSalida().agregarMensaje("[Semantico] " + erroresSemanticosActuales.size() + " errores." );
 
             codigoCompilado = codigo;
             compilacionDisponible = true;
 
             cargarResultadosEnVista();
 
-            int totalErrores
-                    = erroresLexicosActuales.size()
-                    + erroresSintacticosActuales.size()
-                    + erroresSemanticosActuales.size();
+            int totalErrores= erroresLexicosActuales.size() + erroresSintacticosActuales.size() + erroresSemanticosActuales.size();
 
             if (totalErrores == 0 && programaActual != null) {
 
                 GeneradorPromptzal generador  = new GeneradorPromptzal();
 
-                String prompt = generador.generar(
-                                programaActual
-                        );
+                String prompt = generador.generar( programaActual );
 
-                gestorVista
-                        .getTxtPromptGenerado()
-                        .setText(prompt);
+                gestorVista.getTxtPromptGenerado().setText(prompt);
 
-                gestorVista
-                        .getTxtPromptGenerado()
-                        .setCaretPosition(0);
+                gestorVista .getTxtPromptGenerado().setCaretPosition(0);
 
-                gestorVista
-                        .getTablaSalida()
-                        .agregarMensaje(
-                                "[Prompt] Prompt generado correctamente."
-                        );
+                gestorVista .getTablaSalida().agregarMensaje( "[Prompt] Prompt generado correctamente." );
 
-                gestorVista
-                        .getTablaSalida()
-                        .agregarMensaje(
-                                "[PromptZal] Compilacion finalizada sin errores."
-                        );
+                gestorVista.getTablaSalida() .agregarMensaje( "[PromptZal] Compilacion finalizada sin errores." );
 
-                gestorVista.actualizarEstado(
-                        "Compilacion correcta"
-                );
+                gestorVista.actualizarEstado("Compilacion correcta" );
 
                 gestorVista.mostrarPrompt(true);
 
             } else {
-                gestorVista
-                        .getTxtPromptGenerado()
-                        .setText("");
+                gestorVista.getTxtPromptGenerado() .setText("");
 
-                gestorVista
-                        .getTablaSalida()
-                        .agregarMensaje(
-                                "[Prompt] No se genero el prompt porque existen errores."
-                        );
+                gestorVista.getTablaSalida() .agregarMensaje("[Prompt] No se genero el prompt porque existen errores."  );
 
-                gestorVista
-                        .getTablaSalida()
-                        .agregarMensaje(
-                                "[PromptZal] Compilacion finalizada con "
-                                + totalErrores
-                                + " errores."
-                        );
+                gestorVista  .getTablaSalida().agregarMensaje("[PromptZal] Compilacion finalizada con "+ totalErrores + " errores.");
 
-                gestorVista.actualizarEstado(
-                        totalErrores + " errores"
-                );
+                gestorVista.actualizarEstado(totalErrores + " errores" );
 
                 gestorVista.mostrarErrores();
             }
@@ -543,44 +484,22 @@ public class ventanaPrincipal extends javax.swing.JFrame {
         } catch (IOException ex) {
             compilacionDisponible = false;
 
-            gestorVista.actualizarEstado(
-                    "Error de compilacion"
-            );
+            gestorVista.actualizarEstado( "Error de compilacion");
 
-            gestorVista
-                    .getTablaSalida()
-                    .agregarMensaje(
-                            "[Lexer] Error: "
-                            + ex.getMessage()
-                    );
+            gestorVista.getTablaSalida() .agregarMensaje( "[Lexer] Error: "+ ex.getMessage() );
 
             gestorVista.mostrarSalida();
 
-            mostrarError(
-                    "No se pudo ejecutar el analizador lexico: "
-                    + ex.getMessage()
-            );
+            mostrarError( "No se pudo ejecutar el analizador lexico: "+ ex.getMessage() );
         }
     }
 
     private void cargarResultadosEnVista() {
-        gestorVista
-                .getTablaTokens()
-                .cargarTokens(
-                        tokensActuales
-                );
+        gestorVista .getTablaTokens()  .cargarTokens(  tokensActuales );
 
-        gestorVista
-                .getTablaErrores()
-                .cargarErrores(
-                        erroresLexicosActuales,
-                        erroresSintacticosActuales,
-                        erroresSemanticosActuales
-                );
+        gestorVista .getTablaErrores() .cargarErrores( erroresLexicosActuales, erroresSintacticosActuales,erroresSemanticosActuales);
 
-        gestorVista
-                .getTablaEstadisticas()
-                .cargarEstadisticas(
+        gestorVista .getTablaEstadisticas() .cargarEstadisticas(
                         tokensActuales,
                         erroresLexicosActuales,
                         erroresSintacticosActuales,
@@ -588,13 +507,7 @@ public class ventanaPrincipal extends javax.swing.JFrame {
                         codigoCompilado
                 );
 
-        gestorVista
-                .getTablaSimbolos()
-                .cargarSimbolos(
-                        semanticoActual
-                                .getTablaSimbolos()
-                                .getSimbolos()
-                );
+        gestorVista.getTablaSimbolos().cargarSimbolos( semanticoActual.getTablaSimbolos() .getSimbolos());
     }
 
     private void limpiarCompilacion() {
@@ -622,27 +535,17 @@ public class ventanaPrincipal extends javax.swing.JFrame {
         String prompt = gestorVista .getTxtPromptGenerado() .getText();
 
         if (prompt.isBlank()) {
-            mostrarAdvertencia(
-                    "No hay un prompt generado para guardar."
-            );
+            mostrarAdvertencia( "No hay un prompt generado para guardar.");
             return;
         }
 
         JFileChooser selector = new JFileChooser();
 
-        FileNameExtensionFilter filtroMd = new FileNameExtensionFilter(
-                        "Markdown (*.md)",
-                        "md"
-                );
+        FileNameExtensionFilter filtroMd = new FileNameExtensionFilter("Markdown (*.md)","md" );
 
-        FileNameExtensionFilter filtroTxt= new FileNameExtensionFilter(
-                        "Texto (*.txt)",
-                        "txt"
-                );
+        FileNameExtensionFilter filtroTxt= new FileNameExtensionFilter("Texto (*.txt)", "txt");
 
-        selector.setDialogTitle(
-                "Guardar prompt generado"
-        );
+        selector.setDialogTitle("Guardar prompt generado" );
 
         selector.addChoosableFileFilter(filtroTxt);
         selector.setFileFilter(filtroMd);

@@ -41,9 +41,7 @@ public class TablaSimbolos extends javax.swing.JInternalFrame {
                 }
         ) {
             @Override
-            public boolean isCellEditable(
-                    int fila,
-                    int columna) {
+            public boolean isCellEditable(int fila, int columna) {
 
                 return false;
             }
@@ -54,8 +52,7 @@ public class TablaSimbolos extends javax.swing.JInternalFrame {
         jTable1.setAutoCreateRowSorter(true);
     }
 
-    public void cargarSimbolos(
-            ArrayList<Simbolo> simbolos) {
+    public void cargarSimbolos(ArrayList<Simbolo> simbolos) {
 
         limpiarTabla();
 

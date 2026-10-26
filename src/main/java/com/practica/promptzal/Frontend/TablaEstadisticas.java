@@ -44,10 +44,7 @@ public class TablaEstadisticas extends javax.swing.JInternalFrame {
                 }
         ) {
             @Override
-            public boolean isCellEditable(
-                    int fila,
-                    int columna) {
-
+            public boolean isCellEditable(int fila, int columna) {
                 return false;
             }
         };
@@ -85,138 +82,72 @@ public class TablaEstadisticas extends javax.swing.JInternalFrame {
 
         int totalTokens = tokens.size();
 
-        int tiposUtilizados
-                = contarTiposUtilizados(tokens);
+        int tiposUtilizados = contarTiposUtilizados(tokens);
 
-        int totalLineas
-                = contarLineas(codigoFuente);
+        int totalLineas= contarLineas(codigoFuente);
 
-        int totalLexicos
-                = erroresLexicos.size();
+        int totalLexicos = erroresLexicos.size();
 
-        int totalSintacticos
-                = erroresSintacticos.size();
+        int totalSintacticos= erroresSintacticos.size();
 
-        int totalSemanticos
-                = erroresSemanticos.size();
+        int totalSemanticos = erroresSemanticos.size();
 
-        int totalErrores
-                = totalLexicos
-                + totalSintacticos
-                + totalSemanticos;
+        int totalErrores = totalLexicos+ totalSintacticos+ totalSemanticos;
 
-        agregarFila(
-                "Total de tokens",
-                totalTokens
-        );
+        agregarFila("Total de tokens",totalTokens);
 
-        agregarFila(
-                "Tipos de token utilizados",
-                tiposUtilizados
-        );
+        agregarFila("Tipos de token utilizados",tiposUtilizados);
 
-        agregarFila(
-                "Lineas analizadas",
-                totalLineas
-        );
+        agregarFila("Lineas analizadas", totalLineas);
 
-        agregarFila(
-                "Errores lexicos",
-                totalLexicos
-        );
+        agregarFila("Errores lexicos", totalLexicos);
 
-        agregarFila(
-                "Errores sintacticos",
-                totalSintacticos
-        );
+        agregarFila("Errores sintacticos", totalSintacticos );
 
-        agregarFila(
-                "Errores semanticos",
-                totalSemanticos
-        );
+        agregarFila( "Errores semanticos",totalSemanticos  );
 
-        agregarFila(
-                "Total de errores",
-                totalErrores
-        );
+        agregarFila( "Total de errores", totalErrores );
 
         if (totalErrores == 0) {
-            agregarFila(
-                    "Estado de la compilacion",
-                    "Sin errores"
-            );
+            agregarFila( "Estado de la compilacion","Sin errores");
         } else {
-            agregarFila(
-                    "Estado de la compilacion",
-                    "Con errores"
-            );
+            agregarFila( "Estado de la compilacion","Con errores");
         }
 
-        agregarFila(
-                "Frecuencia por tipo de token",
-                ""
-        );
+        agregarFila("Frecuencia por tipo de token", "");
 
-        cargarFrecuencias(
-                tokens,
-                totalTokens
-        );
+        cargarFrecuencias( tokens,totalTokens );
     }
 
-    private void cargarFrecuencias(
-            ArrayList<Token> tokens,
-            int totalTokens) {
+    private void cargarFrecuencias( ArrayList<Token> tokens, int totalTokens) {
 
-        TipoToken[] tipos
-                = TipoToken.values();
+        TipoToken[] tipos = TipoToken.values();
 
-        for (int i = 0;
-                i < tipos.length;
-                i++) {
+        for (int i = 0; i < tipos.length; i++) {
 
             TipoToken tipo = tipos[i];
 
-            int cantidad
-                    = contarTipo(
-                            tokens,
-                            tipo
-                    );
+            int cantidad = contarTipo( tokens, tipo);
 
             double porcentaje = 0.0;
 
             if (totalTokens > 0) {
-                porcentaje
-                        = cantidad * 100.0
-                        / totalTokens;
+                porcentaje= cantidad * 100.0 / totalTokens;
             }
 
-            String valor
-                    = cantidad
-                    + " ("
-                    + String.format(
-                            Locale.US,
-                            "%.2f",
-                            porcentaje
-                    )
-                    + " %)";
+            String valor= cantidad  + " ("+ String.format(  Locale.US, "%.2f", porcentaje ) + " %)";
 
-            agregarFila(
-                    tipo.name(),
-                    valor
-            );
+            agregarFila( tipo.name(),valor);
         }
     }
 
-    private int contarTipo(
-            ArrayList<Token> tokens,
-            TipoToken tipoBuscado) {
+    private int contarTipo( ArrayList<Token> tokens,TipoToken tipoBuscado) {
 
         int cantidad = 0;
 
         for (Token token : tokens) {
 
-            if (token.getTipo()
-                    == tipoBuscado) {
+            if (token.getTipo() == tipoBuscado) {
 
                 cantidad++;
             }
@@ -225,22 +156,15 @@ public class TablaEstadisticas extends javax.swing.JInternalFrame {
         return cantidad;
     }
 
-    private int contarTiposUtilizados(
-            ArrayList<Token> tokens) {
+    private int contarTiposUtilizados(ArrayList<Token> tokens) {
 
         int cantidad = 0;
 
-        TipoToken[] tipos
-                = TipoToken.values();
+        TipoToken[] tipos = TipoToken.values();
 
-        for (int i = 0;
-                i < tipos.length;
-                i++) {
+        for (int i = 0;i < tipos.length; i++) {
 
-            if (contarTipo(
-                    tokens,
-                    tipos[i]
-            ) > 0) {
+            if (contarTipo( tokens,tipos[i]  ) > 0) {
 
                 cantidad++;
             }
@@ -249,8 +173,7 @@ public class TablaEstadisticas extends javax.swing.JInternalFrame {
         return cantidad;
     }
 
-    private int contarLineas(
-            String codigoFuente) {
+    private int contarLineas( String codigoFuente) {
 
         if (codigoFuente.isEmpty()) {
             return 0;
@@ -258,13 +181,9 @@ public class TablaEstadisticas extends javax.swing.JInternalFrame {
 
         int cantidad = 1;
 
-        for (int i = 0;
-                i < codigoFuente.length();
-                i++) {
+        for (int i = 0; i < codigoFuente.length(); i++) {
 
-            if (codigoFuente.charAt(i)
-                    == '\n') {
-
+            if (codigoFuente.charAt(i) == '\n') {
                 cantidad++;
             }
         }
@@ -272,9 +191,7 @@ public class TablaEstadisticas extends javax.swing.JInternalFrame {
         return cantidad;
     }
 
-    private void agregarFila(
-            String estadistica,
-            Object valor) {
+    private void agregarFila(String estadistica,  Object valor) {
 
         modeloTabla.addRow(
                 new Object[]{
