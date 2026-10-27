@@ -77,11 +77,7 @@ public class Parser {
         );
 
         if (valor != null) {
-            programa.agregarDirectiva(
-                    new Directiva(
-                            directiva.getLexema(),
-                            quitarComillas(valor.getLexema())
-                    )
+            programa.agregarDirectiva( new Directiva(directiva.getLexema(),quitarComillas(valor.getLexema()) )
             );
         }
 
@@ -150,19 +146,11 @@ public class Parser {
 
         String textoContexto = contexto();
 
-        int linea = inicio != null
-                ? inicio.getFila()
-                : actual().getFila();
+        int linea = inicio != null ? inicio.getFila() : actual().getFila();
 
-        String nombreAgente = nombre != null
-                ? nombre.getLexema()
-                : "";
+        String nombreAgente = nombre != null ? nombre.getLexema() : "";
 
-        Agente agente = new Agente(
-                nombreAgente,
-                textoContexto,
-                linea
-        );
+        Agente agente = new Agente(nombreAgente,textoContexto, linea);
 
         variables(agente);
         comandos(agente);
@@ -244,12 +232,7 @@ public class Parser {
 
         if (nombre != null && expresion != null) {
             agente.agregarVariable(
-                    new Variable(
-                            nombre.getLexema(),
-                            expresion,
-                            inicio.getFila()
-                    )
-            );
+                    new Variable( nombre.getLexema(), expresion,inicio.getFila() ) );
         }
 
         variables(agente);
@@ -290,7 +273,6 @@ public class Parser {
         if (comando != null) {
             agente.agregarComando(comando);
         }
-
         masComandos(agente);
     }
 
@@ -322,9 +304,7 @@ public class Parser {
                 TipoToken.EXPORTAR
         );
 
-        if (tipo == null
-                || expresionPrincipal == null
-                || destino == null) {
+        if (tipo == null || expresionPrincipal == null  || destino == null) {
             return null;
         }
 
@@ -355,12 +335,7 @@ public class Parser {
         Expresiones expresion = expresion();
 
         if (expresion != null) {
-            lista.add(
-                    new ConectorComando(
-                            conector.getLexema(),
-                            expresion
-                    )
-            );
+            lista.add(  new ConectorComando( conector.getLexema(), expresion ));
         }
 
         lista.addAll(conectores());
@@ -407,21 +382,13 @@ public class Parser {
         if (verificar(TipoToken.CADENA)) {
             Token token = avanzar();
 
-            return new Termino(
-                    "CADENA",
-                    quitarComillas(token.getLexema()),
-                    token.getFila()
-            );
+            return new Termino("CADENA", quitarComillas(token.getLexema()),token.getFila() );
         }
 
         if (verificar(TipoToken.ID)) {
             Token token = avanzar();
 
-            return new Termino(
-                    "ID",
-                    token.getLexema(),
-                    token.getFila()
-            );
+            return new Termino( "ID",token.getLexema(), token.getFila());
         }
 
         if (verificar(TipoToken.NUMERO)) {
@@ -430,19 +397,10 @@ public class Parser {
             String unidad = unidad();
 
             if (unidad == null) {
-                return new Termino(
-                        "NUMERO",
-                        token.getLexema(),
-                        token.getFila()
-                );
+                return new Termino( "NUMERO", token.getLexema(), token.getFila());
             }
 
-            return new Termino(
-                    "NUMERO",
-                    token.getLexema(),
-                    unidad,
-                    token.getFila()
-            );
+            return new Termino( "NUMERO", token.getLexema(),unidad, token.getFila() );
         }
 
         if (verificar(TipoToken.CARGAR)) {
@@ -514,11 +472,7 @@ public class Parser {
             return null;
         }
 
-        return new Termino(
-                "CARGAR",
-                quitarComillas(archivo.getLexema()),
-                cargar.getFila()
-        );
+        return new Termino("CARGAR",quitarComillas(archivo.getLexema()),cargar.getFila() );
     }
 
     // <ejecuciones> -> EJECUTAR ID <mas_ejecuciones>
@@ -526,10 +480,7 @@ public class Parser {
         if (!verificar(TipoToken.EJECUTAR)) {
             registrarError("EJECUTAR");
 
-            sincronizar(
-                    TipoToken.EJECUTAR,
-                    TipoToken.EXPORTAR
-            );
+            sincronizar( TipoToken.EJECUTAR, TipoToken.EXPORTAR );
         }
 
         if (verificar(TipoToken.EJECUTAR)) {
@@ -544,13 +495,8 @@ public class Parser {
 
             if (agente != null) {
                 programa.agregarEjecucion(
-                        new Ejecucion(
-                                agente.getLexema(),
-                                ejecutar.getFila()
-                        )
-                );
+                        new Ejecucion(agente.getLexema(), ejecutar.getFila() ));
             }
-
             masEjecuciones(programa);
         }
     }
@@ -571,14 +517,8 @@ public class Parser {
         );
 
         if (agente != null) {
-            programa.agregarEjecucion(
-                    new Ejecucion(
-                            agente.getLexema(),
-                            ejecutar.getFila()
-                    )
-            );
+            programa.agregarEjecucion(  new Ejecucion( agente.getLexema(), ejecutar.getFila() ) );
         }
-
         masEjecuciones(programa);
     }
 
@@ -587,10 +527,7 @@ public class Parser {
         if (!verificar(TipoToken.EXPORTAR)) {
             registrarError("EXPORTAR");
 
-            sincronizar(
-                    TipoToken.EXPORTAR,
-                    TipoToken.EOF
-            );
+            sincronizar(TipoToken.EXPORTAR, TipoToken.EOF);
         }
 
         if (!verificar(TipoToken.EXPORTAR)) {
@@ -607,12 +544,7 @@ public class Parser {
         );
 
         if (variable != null) {
-            programa.agregarExportacion(
-                    new Exportacion(
-                            variable.getLexema(),
-                            exportar.getFila()
-                    )
-            );
+            programa.agregarExportacion(new Exportacion(variable.getLexema(), exportar.getFila() ) );
         }
 
         masIds(programa);
@@ -635,20 +567,12 @@ public class Parser {
 
         if (variable != null) {
             programa.agregarExportacion(
-                    new Exportacion(
-                            variable.getLexema(),
-                            coma.getFila()
-                    )
-            );
+                    new Exportacion(variable.getLexema(), coma.getFila() ) );
         }
-
         masIds(programa);
     }
 
-    private Token consumir(
-            TipoToken esperado,
-            String descripcion,
-            TipoToken... sincronizacion) {
+    private Token consumir(TipoToken esperado, String descripcion, TipoToken... sincronizacion) {
 
         if (verificar(esperado)) {
             return avanzar();
@@ -679,22 +603,14 @@ public class Parser {
     }
 
     private void sincronizar(TipoToken... adicionales) {
-        while (!verificar(TipoToken.EOF)
-                && !esTokenSincronizacion(
-                        actual().getTipo(),
-                        adicionales
-                )) {
-
+        while (!verificar(TipoToken.EOF)  && !esTokenSincronizacion(actual().getTipo(),adicionales)) {
             avanzar();
         }
     }
 
-    private boolean esTokenSincronizacion(
-            TipoToken tipo,
-            TipoToken... adicionales) {
+    private boolean esTokenSincronizacion(TipoToken tipo, TipoToken... adicionales) {
 
-        if (tipo == TipoToken.AGENTE
-                || tipo == TipoToken.LLAVE_C
+        if (tipo == TipoToken.AGENTE || tipo == TipoToken.LLAVE_C
                 || tipo == TipoToken.COMANDO_IA
                 || tipo == TipoToken.VARIABLE
                 || tipo == TipoToken.EJECUTAR
@@ -731,15 +647,9 @@ public class Parser {
     }
 
     private String quitarComillas(String texto) {
-        if (texto != null
-                && texto.length() >= 2
-                && texto.charAt(0) == '"'
-                && texto.charAt(texto.length() - 1) == '"') {
+        if (texto != null && texto.length() >= 2  && texto.charAt(0) == '"'&& texto.charAt(texto.length() - 1) == '"') {
 
-            return texto.substring(
-                    1,
-                    texto.length() - 1
-            );
+            return texto.substring( 1,texto.length() - 1);
         }
 
         return texto;

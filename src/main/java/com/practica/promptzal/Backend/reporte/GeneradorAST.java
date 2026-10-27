@@ -66,17 +66,13 @@ public class GeneradorAST {
 
         String contenido = construirDot(programa);
 
-        try (BufferedWriter escritor
-                = new BufferedWriter(new FileWriter(rutaDot))) {
+        try (BufferedWriter escritor= new BufferedWriter(new FileWriter(rutaDot))) {
 
             escritor.write(contenido);
             return true;
 
         } catch (IOException e) {
-            System.out.println(
-                    "Error al generar el DOT del AST: "
-                    + e.getMessage()
-            );
+            System.out.println("Error al generar el DOT del AST: " + e.getMessage() );
 
             return false;
         }
@@ -92,237 +88,116 @@ public class GeneradorAST {
         dot.append("fontsize=20;\n");
         dot.append("node [shape=box, style=\"rounded\"];\n\n");
 
-        String nodoPrograma = crearNodo(
-                dot,
-                "Programa"
-        );
+        String nodoPrograma = crearNodo(dot,"Programa" );
 
-        agregarDirectivas(
-                programa,
-                nodoPrograma,
-                dot
-        );
+        agregarDirectivas(programa,nodoPrograma, dot);
 
-        agregarAgentes(
-                programa,
-                nodoPrograma,
-                dot
-        );
+        agregarAgentes(programa,nodoPrograma, dot );
 
-        agregarEjecuciones(
-                programa,
-                nodoPrograma,
-                dot
-        );
+        agregarEjecuciones(programa, nodoPrograma, dot);
 
-        agregarExportaciones(
-                programa,
-                nodoPrograma,
-                dot
-        );
+        agregarExportaciones(programa,nodoPrograma,dot);
 
         dot.append("}\n");
 
         return dot.toString();
     }
 
-    private void agregarDirectivas(
-            Programa programa,
-            String padre,
-            StringBuilder dot) {
+    private void agregarDirectivas(Programa programa, String padre,StringBuilder dot) {
 
         if (programa.getDirectivas().isEmpty()) {
             return;
         }
 
-        String nodoDirectivas = crearNodo(
-                dot,
-                "Directivas"
-        );
+        String nodoDirectivas = crearNodo(dot, "Directivas" );
 
         conectar(dot, padre, nodoDirectivas);
 
         for (Directiva directiva : programa.getDirectivas()) {
 
-            String nodo = crearNodo(
-                    dot,
-                    directiva.getNombre()
-                    + "\\n"
-                    + directiva.getValor()
-            );
+            String nodo = crearNodo(dot,  directiva.getNombre()+ "\\n" + directiva.getValor());
 
-            conectar(
-                    dot,
-                    nodoDirectivas,
-                    nodo
-            );
+            conectar(dot, nodoDirectivas, nodo );
         }
     }
 
-    private void agregarAgentes(
-            Programa programa,
-            String padre,
-            StringBuilder dot) {
+    private void agregarAgentes(Programa programa,String padre,StringBuilder dot) {
 
         if (programa.getAgentes().isEmpty()) {
             return;
         }
 
-        String nodoAgentes = crearNodo(
-                dot,
-                "Agentes"
-        );
+        String nodoAgentes = crearNodo(  dot,"Agentes" );
 
         conectar(dot, padre, nodoAgentes);
 
         for (Agente agente : programa.getAgentes()) {
-            agregarAgente(
-                    agente,
-                    nodoAgentes,
-                    dot
-            );
+            agregarAgente(agente,nodoAgentes,dot);
         }
     }
 
-    private void agregarAgente(
-            Agente agente,
-            String padre,
-            StringBuilder dot) {
+    private void agregarAgente( Agente agente, String padre, StringBuilder dot) {
 
-        String nodoAgente = crearNodo(
-                dot,
-                "Agente\\n" + agente.getNombre()
-        );
+        String nodoAgente = crearNodo(dot,"Agente\\n" + agente.getNombre());
 
         conectar(dot, padre, nodoAgente);
 
-        String nodoContexto = crearNodo(
-                dot,
-                "Contexto\\n"
-                + agente.getContexto()
-        );
+        String nodoContexto = crearNodo( dot, "Contexto\\n"+ agente.getContexto());
 
-        conectar(
-                dot,
-                nodoAgente,
-                nodoContexto
-        );
+        conectar( dot,nodoAgente, nodoContexto);
 
-        agregarVariables(
-                agente,
-                nodoAgente,
-                dot
-        );
+        agregarVariables(agente, nodoAgente, dot );
 
-        agregarComandos(
-                agente,
-                nodoAgente,
-                dot
-        );
+        agregarComandos(agente,nodoAgente,dot );
     }
 
-    private void agregarVariables(
-            Agente agente,
-            String padre,
-            StringBuilder dot) {
+    private void agregarVariables(Agente agente,String padre,StringBuilder dot) {
 
         if (agente.getVariables().isEmpty()) {
             return;
         }
 
-        String nodoVariables = crearNodo(
-                dot,
-                "Variables"
-        );
+        String nodoVariables = crearNodo( dot,"Variables");
 
         conectar(dot, padre, nodoVariables);
 
         for (Variable variable : agente.getVariables()) {
 
-            String nodoVariable = crearNodo(
-                    dot,
-                    "Variable\\n"
-                    + variable.getNombre()
-            );
+            String nodoVariable = crearNodo( dot,"Variable\\n"+ variable.getNombre() );
 
-            conectar(
-                    dot,
-                    nodoVariables,
-                    nodoVariable
-            );
+            conectar( dot,nodoVariables, nodoVariable);
 
-            agregarExpresion(
-                    variable.getExpresion(),
-                    nodoVariable,
-                    dot
-            );
+            agregarExpresion( variable.getExpresion(),nodoVariable, dot);
         }
     }
 
-    private void agregarComandos(
-            Agente agente,
-            String padre,
-            StringBuilder dot) {
+    private void agregarComandos( Agente agente,String padre,StringBuilder dot) {
 
         if (agente.getComandos().isEmpty()) {
             return;
         }
 
-        String nodoComandos = crearNodo(
-                dot,
-                "Comandos"
-        );
+        String nodoComandos = crearNodo(dot,"Comandos" );
 
         conectar(dot, padre, nodoComandos);
 
         for (Comando comando : agente.getComandos()) {
 
-            String nodoComando = crearNodo(
-                    dot,
-                    "Comando\\n"
-                    + comando.getTipo()
-            );
+            String nodoComando = crearNodo(dot,"Comando\\n"+ comando.getTipo());
 
-            conectar(
-                    dot,
-                    nodoComandos,
-                    nodoComando
-            );
+            conectar( dot, nodoComandos,nodoComando );
 
-            String nodoPrincipal = crearNodo(
-                    dot,
-                    "Expresion principal"
-            );
+            String nodoPrincipal = crearNodo( dot, "Expresion principal");
 
-            conectar(
-                    dot,
-                    nodoComando,
-                    nodoPrincipal
-            );
+            conectar(dot,nodoComando, nodoPrincipal );
 
-            agregarExpresion(
-                    comando.getExpresionPrincipal(),
-                    nodoPrincipal,
-                    dot
-            );
+            agregarExpresion( comando.getExpresionPrincipal(), nodoPrincipal, dot );
 
-            agregarConectores(
-                    comando,
-                    nodoComando,
-                    dot
-            );
+            agregarConectores(comando,nodoComando, dot);
 
-            String nodoDestino = crearNodo(
-                    dot,
-                    "Destino\\n"
-                    + comando.getVariableDestino()
-            );
+            String nodoDestino = crearNodo(dot,"Destino\\n"+ comando.getVariableDestino());
 
-            conectar(
-                    dot,
-                    nodoComando,
-                    nodoDestino
-            );
+            conectar(dot, nodoComando, nodoDestino );
         }
     }
 
@@ -335,32 +210,17 @@ public class GeneradorAST {
             return;
         }
 
-        String nodoConectores = crearNodo(
-                dot,
-                "Conectores"
-        );
+        String nodoConectores = crearNodo(dot, "Conectores" );
 
         conectar(dot, padre, nodoConectores);
 
-        for (ConectorComando conector
-                : comando.getConectores()) {
+        for (ConectorComando conector : comando.getConectores()) {
 
-            String nodoConector = crearNodo(
-                    dot,
-                    conector.getTipo()
-            );
+            String nodoConector = crearNodo( dot, conector.getTipo());
 
-            conectar(
-                    dot,
-                    nodoConectores,
-                    nodoConector
-            );
+            conectar(dot,nodoConectores, nodoConector);
 
-            agregarExpresion(
-                    conector.getExpresion(),
-                    nodoConector,
-                    dot
-            );
+            agregarExpresion(conector.getExpresion(), nodoConector,dot );
         }
     }
 

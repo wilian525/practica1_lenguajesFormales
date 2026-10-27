@@ -29,6 +29,4 @@ public enum TipoErrorLexico {
     public String toString() {
         return descripcion;
     }
-    
-    
 }
