@@ -190,17 +190,12 @@ public class GeneradorAFD {
                 return true;
             }
 
-            System.out.println(
-                    "Graphviz no pudo generar la imagen del AFD."
-            );
+            System.out.println( "Graphviz no pudo generar la imagen del AFD." );
 
             return false;
 
         } catch (IOException e) {
-            System.out.println(
-                    "No se pudo ejecutar Graphviz: "
-                    + e.getMessage()
-            );
+            System.out.println("No se pudo ejecutar Graphviz: "+ e.getMessage());
 
             return false;
 
