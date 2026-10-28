@@ -44,18 +44,13 @@ public class GeneradorAFD {
     private boolean generarArchivoDot() {
         String contenido = construirDot();
 
-        try (BufferedWriter escritor
-                = new BufferedWriter(new FileWriter(rutaDot))) {
+        try (BufferedWriter escritor= new BufferedWriter(new FileWriter(rutaDot))) {
 
             escritor.write(contenido);
             return true;
 
         } catch (IOException e) {
-            System.out.println(
-                    "Error al generar el archivo DOT del AFD: "
-                    + e.getMessage()
-            );
-
+            System.out.println( "Error al generar el archivo DOT del AFD: "+ e.getMessage() );
             return false;
         }
     }

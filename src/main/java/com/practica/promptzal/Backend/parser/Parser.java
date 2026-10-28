@@ -278,10 +278,7 @@ public class Parser {
 
     // <comando> -> COMANDO_IA <expresion> <conectores> FLECHA ID
     private Comando comando() {
-        Token tipo = consumir(
-                TipoToken.COMANDO_IA,
-                "COMANDO_IA"
-        );
+        Token tipo = consumir(TipoToken.COMANDO_IA,"COMANDO_IA" );
 
         Expresiones expresionPrincipal = expresion();
 
@@ -407,9 +404,7 @@ public class Parser {
             return cargar();
         }
 
-        registrarError(
-                "CADENA, ID, NUMERO o CARGAR"
-        );
+        registrarError("CADENA, ID, NUMERO o CARGAR");
 
         sincronizar(
                 TipoToken.MAS,
@@ -430,16 +425,12 @@ public class Parser {
         if (!verificar(TipoToken.ID)) {
             return null;
         }
-
         return avanzar().getLexema();
     }
 
     // <cargar> -> CARGAR PAR_A CADENA PAR_C
     private Termino cargar() {
-        Token cargar = consumir(
-                TipoToken.CARGAR,
-                "CARGAR"
-        );
+        Token cargar = consumir( TipoToken.CARGAR, "CARGAR" );
 
         consumir(
                 TipoToken.PAR_A,
@@ -494,8 +485,7 @@ public class Parser {
             );
 
             if (agente != null) {
-                programa.agregarEjecucion(
-                        new Ejecucion(agente.getLexema(), ejecutar.getFila() ));
+                programa.agregarEjecucion( new Ejecucion(agente.getLexema(), ejecutar.getFila() ));
             }
             masEjecuciones(programa);
         }
@@ -536,12 +526,7 @@ public class Parser {
 
         Token exportar = avanzar();
 
-        Token variable = consumir(
-                TipoToken.ID,
-                "ID",
-                TipoToken.COMA,
-                TipoToken.EOF
-        );
+        Token variable = consumir(TipoToken.ID,"ID",TipoToken.COMA,TipoToken.EOF);
 
         if (variable != null) {
             programa.agregarExportacion(new Exportacion(variable.getLexema(), exportar.getFila() ) );
@@ -558,16 +543,10 @@ public class Parser {
 
         Token coma = avanzar();
 
-        Token variable = consumir(
-                TipoToken.ID,
-                "ID",
-                TipoToken.COMA,
-                TipoToken.EOF
-        );
+        Token variable = consumir(TipoToken.ID, "ID",TipoToken.COMA,TipoToken.EOF);
 
         if (variable != null) {
-            programa.agregarExportacion(
-                    new Exportacion(variable.getLexema(), coma.getFila() ) );
+            programa.agregarExportacion( new Exportacion(variable.getLexema(), coma.getFila() ) );
         }
         masIds(programa);
     }

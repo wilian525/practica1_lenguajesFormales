@@ -52,9 +52,7 @@ public class GestorArchivo {
     
     public Path asegurarExtensionPz(Path ruta){
         if (ruta ==  null) {
-               throw new IllegalArgumentException(
-                    "La ruta no puede ser nula."
-            );
+               throw new IllegalArgumentException("La ruta no puede ser nula.");
         }
         String nombre = ruta.getFileName().toString();
         if (nombre.toLowerCase().endsWith(".pz")) {

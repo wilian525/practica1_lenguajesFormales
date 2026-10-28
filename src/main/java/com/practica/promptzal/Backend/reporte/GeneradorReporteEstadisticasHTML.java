@@ -14,13 +14,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  *
@@ -64,21 +59,13 @@ public class GeneradorReporteEstadisticasHTML {
                 codigoFuente
         );
 
-        try (BufferedWriter escritor
-                = new BufferedWriter(
-                        new FileWriter(rutaReporte)
-                )) {
-
+        try (BufferedWriter escritor= new BufferedWriter( new FileWriter(rutaReporte) )) {
             escritor.write(contenido);
             return true;
 
         } catch (IOException e) {
 
-            System.out.println(
-                    "Error al generar el reporte de estadisticas: "
-                    + e.getMessage()
-            );
-
+            System.out.println("Error al generar el reporte de estadisticas: "+ e.getMessage());
             return false;
         }
     }
@@ -102,25 +89,17 @@ public class GeneradorReporteEstadisticasHTML {
 
         int totalTokens = tokens.size();
 
-        int tiposUtilizados
-                = contarTiposUtilizados(tokens);
+        int tiposUtilizados = contarTiposUtilizados(tokens);
 
-        int totalLineas
-                = contarLineas(codigoFuente);
+        int totalLineas = contarLineas(codigoFuente);
 
-        int totalLexicos
-                = erroresLexicos.size();
+        int totalLexicos = erroresLexicos.size();
 
-        int totalSintacticos
-                = erroresSintacticos.size();
+        int totalSintacticos= erroresSintacticos.size();
 
-        int totalSemanticos
-                = erroresSemanticos.size();
+        int totalSemanticos= erroresSemanticos.size();
 
-        int totalErrores
-                = totalLexicos
-                + totalSintacticos
-                + totalSemanticos;
+        int totalErrores = totalLexicos + totalSintacticos+ totalSemanticos;
 
         html.append("<!DOCTYPE html>\n");
         html.append("<html lang=\"es\">\n");
@@ -134,30 +113,11 @@ public class GeneradorReporteEstadisticasHTML {
 
         html.append("<section class=\"contenido\">\n");
 
-        agregarResumen(
-                html,
-                totalTokens,
-                tiposUtilizados,
-                totalLineas,
-                totalErrores
-        );
+        agregarResumen(html,totalTokens,tiposUtilizados,totalLineas, totalErrores);
 
-        agregarFrecuencias(
-                html,
-                tokens,
-                totalTokens
-        );
+        agregarFrecuencias(html, tokens,totalTokens);
 
-        agregarResumenCompilacion(
-                html,
-                totalTokens,
-                tiposUtilizados,
-                totalLineas,
-                totalLexicos,
-                totalSintacticos,
-                totalSemanticos,
-                totalErrores
-        );
+        agregarResumenCompilacion( html, totalTokens,tiposUtilizados, totalLineas, totalLexicos,  totalSintacticos, totalSemanticos, totalErrores );
 
         html.append("</section>\n");
 
@@ -205,26 +165,15 @@ public class GeneradorReporteEstadisticasHTML {
 
         html.append("<header>\n");
 
-        html.append(
-                "<div class=\"titulo-reporte\">\n"
-        );
+        html.append("<div class=\"titulo-reporte\">\n");
 
-        html.append(
-                "<h1>Reporte de Estadisticas</h1>\n"
-        );
+        html.append("<h1>Reporte de Estadisticas</h1>\n");
 
-        html.append(
-                "<p>Resumen general del proceso "
-                + "de compilacion de PromptZal</p>\n"
-        );
+        html.append( "<p>Resumen general del proceso "+ "de compilacion de PromptZal</p>\n" );
 
         html.append("</div>\n");
 
-        html.append(
-                "<div class=\"marca\">"
-                + "PromptZal Compiler"
-                + "</div>\n"
-        );
+        html.append("<div class=\"marca\">"+ "PromptZal Compiler"+ "</div>\n");
 
         html.append("</header>\n");
     }
@@ -289,31 +238,19 @@ public class GeneradorReporteEstadisticasHTML {
         html.append("</div>\n");
     }
 
-    private void agregarFrecuencias(
-            StringBuilder html,
-            ArrayList<Token> tokens,
-            int totalTokens) {
+    private void agregarFrecuencias( StringBuilder html,ArrayList<Token> tokens,  int totalTokens) {
 
         html.append("<div class=\"seccion\">\n");
 
-        html.append(
-                "<div class=\"titulo-seccion\">\n"
-        );
+        html.append("<div class=\"titulo-seccion\">\n" );
 
-        html.append(
-                "<h2>Frecuencia por tipo de token</h2>\n"
-        );
+        html.append("<h2>Frecuencia por tipo de token</h2>\n");
 
-        html.append(
-                "<span>Distribucion de los terminales "
-                + "reconocidos por JFlex</span>\n"
-        );
+        html.append("<span>Distribucion de los terminales "+ "reconocidos por JFlex</span>\n" );
 
         html.append("</div>\n");
 
-        html.append(
-                "<div class=\"lista-frecuencias\">\n"
-        );
+        html.append( "<div class=\"lista-frecuencias\">\n" );
 
         TipoToken[] tipos = TipoToken.values();
 
@@ -321,43 +258,24 @@ public class GeneradorReporteEstadisticasHTML {
 
             TipoToken tipo = tipos[i];
 
-            int cantidad = contarTipo(
-                    tokens,
-                    tipo
-            );
+            int cantidad = contarTipo(tokens, tipo);
 
             double porcentaje = 0.0;
 
             if (totalTokens > 0) {
-                porcentaje
-                        = cantidad * 100.0
-                        / totalTokens;
+                porcentaje= cantidad * 100.0 / totalTokens;
             }
 
-            agregarFrecuencia(
-                    html,
-                    tipo,
-                    cantidad,
-                    porcentaje
-            );
+            agregarFrecuencia( html,tipo, cantidad, porcentaje );
         }
 
         html.append("</div>\n");
         html.append("</div>\n");
     }
 
-    private void agregarFrecuencia(
-            StringBuilder html,
-            TipoToken tipo,
-            int cantidad,
-            double porcentaje) {
+    private void agregarFrecuencia(StringBuilder html,TipoToken tipo,int cantidad,double porcentaje) {
 
-        String porcentajeTexto
-                = String.format(
-                        Locale.US,
-                        "%.2f",
-                        porcentaje
-                );
+        String porcentajeTexto = String.format(Locale.US,"%.2f",porcentaje);
 
         html.append(
                 "<div class=\"frecuencia\">\n"
