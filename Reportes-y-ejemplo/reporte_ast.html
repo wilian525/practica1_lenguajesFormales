@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AST - PromptZal</title>
+<style>
+:root {
+    --fondo-principal: #0d1117;
+    --fondo-secundario: #161b22;
+    --panel: #161b22;
+    --panel-suave: #1c2333;
+    --borde: #30363d;
+    --borde-suave: #263041;
+    --texto-principal: #e6edf3;
+    --texto-secundario: #8b949e;
+    --texto-suave: #6e7681;
+    --acento: #58a6ff;
+    --agente: #58a6ff;
+    --variable: #3fb950;
+    --comando: #bc8cff;
+    --ejecucion: #f0a84b;
+    --sombra: rgba(0, 0, 0, 0.35);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 32px;
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(88, 166, 255, 0.09),
+            transparent 28%
+        ),
+        radial-gradient(
+            circle at bottom left,
+            rgba(188, 140, 255, 0.06),
+            transparent 30%
+        ),
+        var(--fondo-principal);
+    color: var(--texto-principal);
+}
+
+.contenedor {
+    width: 100%;
+    max-width: 1450px;
+    margin: 0 auto;
+    background: var(--panel);
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 18px 50px var(--sombra);
+    animation: aparecerReporte 0.45s ease;
+}
+
+@keyframes aparecerReporte {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 26px 30px;
+    background:
+        linear-gradient(
+            135deg,
+            #111827,
+            #0d1117
+        );
+    border-bottom: 1px solid var(--borde);
+}
+
+.titulo-reporte {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.titulo-reporte h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+}
+
+.titulo-reporte p {
+    margin: 0;
+    color: var(--texto-secundario);
+    font-size: 14px;
+}
+
+.marca {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    background: rgba(88, 166, 255, 0.08);
+    color: var(--acento);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.contenido {
+    padding: 28px 30px 32px;
+}
+
+.resumen {
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.tarjeta {
+    position: relative;
+    overflow: hidden;
+    padding: 18px;
+    background: var(--panel-suave);
+    border: 1px solid var(--borde);
+    border-radius: 11px;
+    transition:
+        transform 0.22s ease,
+        border-color 0.22s ease,
+        box-shadow 0.22s ease;
+}
+
+.tarjeta:hover {
+    transform: translateY(-3px);
+    border-color: #46566e;
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.tarjeta::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--acento);
+}
+
+.tarjeta-agentes::before {
+    background: var(--agente);
+}
+
+.tarjeta-variables::before {
+    background: var(--variable);
+}
+
+.tarjeta-comandos::before {
+    background: var(--comando);
+}
+
+.tarjeta-ejecuciones::before {
+    background: var(--ejecucion);
+}
+
+.tarjeta span {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--texto-secundario);
+    font-size: 13px;
+}
+
+.tarjeta strong {
+    display: block;
+    color: var(--texto-principal);
+    font-size: 25px;
+    font-weight: 700;
+}
+
+.barra-herramientas {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    background: #111827;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+}
+
+.grupo-controles {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 8px 13px;
+    border: 1px solid var(--borde);
+    border-radius: 7px;
+    outline: none;
+    background: var(--fondo-secundario);
+    color: var(--texto-principal);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background-color 0.20s ease,
+        border-color 0.20s ease,
+        transform 0.15s ease,
+        box-shadow 0.20s ease;
+}
+
+.boton:hover {
+    background: #202b3c;
+    border-color: var(--acento);
+    transform: translateY(-1px);
+    box-shadow:
+        0 5px 14px rgba(0, 0, 0, 0.22);
+}
+
+.boton:active {
+    transform: translateY(0);
+}
+
+.boton-zoom {
+    min-width: 40px;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 18px;
+}
+
+.indicador-zoom {
+    min-width: 70px;
+    padding: 8px 11px;
+    border: 1px solid rgba(88, 166, 255, 0.25);
+    border-radius: 7px;
+    background: rgba(88, 166, 255, 0.08);
+    color: var(--acento);
+    text-align: center;
+    font-family:
+        "JetBrains Mono",
+        "Consolas",
+        monospace;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.ayuda {
+    color: var(--texto-secundario);
+    font-size: 12px;
+}
+
+.visor {
+    position: relative;
+    width: 100%;
+    height: 650px;
+    overflow: hidden;
+    background:
+        linear-gradient(
+            rgba(88, 166, 255, 0.025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(88, 166, 255, 0.025) 1px,
+            transparent 1px
+        ),
+        #f8fafc;
+    background-size: 25px 25px;
+    border: 1px solid var(--borde);
+    border-radius: 11px;
+    cursor: grab;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.visor:hover {
+    border-color: #46566e;
+    box-shadow:
+        inset 0 0 30px rgba(88, 166, 255, 0.025);
+}
+
+.visor.arrastrando {
+    cursor: grabbing;
+}
+
+.ast-imagen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    max-width: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    transform-origin: 0 0;
+    transition:
+        opacity 0.3s ease;
+    animation: aparecerArbol 0.6s ease;
+}
+
+@keyframes aparecerArbol {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.leyenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: #111827;
+    border: 1px solid var(--borde);
+    border-radius: 9px;
+}
+
+.leyenda-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--texto-secundario);
+    font-size: 12px;
+}
+
+.punto {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    box-shadow: 0 0 8px currentColor;
+}
+
+.punto-programa {
+    color: var(--acento);
+    background: var(--acento);
+}
+
+.punto-agente {
+    color: var(--agente);
+    background: var(--agente);
+}
+
+.punto-variable {
+    color: var(--variable);
+    background: var(--variable);
+}
+
+.punto-comando {
+    color: var(--comando);
+    background: var(--comando);
+}
+
+.info {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--acento);
+    border-radius: 7px;
+    background: rgba(88, 166, 255, 0.06);
+    color: var(--texto-secundario);
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.info strong {
+    color: var(--texto-principal);
+}
+
+.error-imagen {
+    display: flex;
+    min-height: 300px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    color: var(--texto-secundario);
+    text-align: center;
+}
+
+footer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 17px 30px;
+    border-top: 1px solid var(--borde);
+    background: #0d1117;
+    color: var(--texto-secundario);
+    font-size: 12px;
+}
+
+@media (max-width: 900px) {
+    body {
+        padding: 15px;
+    }
+
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .contenido {
+        padding: 20px;
+    }
+
+    .resumen {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .barra-herramientas {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .visor {
+        height: 520px;
+    }
+}
+
+@media (max-width: 520px) {
+    .resumen {
+        grid-template-columns: 1fr;
+    }
+
+    .titulo-reporte h1 {
+        font-size: 22px;
+    }
+
+    .visor {
+        height: 430px;
+    }
+}
+
+</style>
+</head>
+<body>
+<main class="contenedor">
+<header>
+<div class="titulo-reporte">
+<h1>Arbol de Sintaxis Abstracta</h1>
+<p>Representacion dinamica del AST construido durante el analisis</p>
+</div>
+<div class="marca">PromptZal Compiler</div>
+</header>
+<section class="contenido">
+<div class="resumen">
+<div class="tarjeta tarjeta-agentes">
+<span>Agentes</span>
+<strong>2</strong>
+</div>
+<div class="tarjeta tarjeta-variables">
+<span>Variables declaradas</span>
+<strong>2</strong>
+</div>
+<div class="tarjeta tarjeta-comandos">
+<span>Comandos</span>
+<strong>3</strong>
+</div>
+<div class="tarjeta tarjeta-ejecuciones">
+<span>Ejecuciones</span>
+<strong>2</strong>
+</div>
+</div>
+<div class="barra-herramientas">
+<div class="grupo-controles">
+<button id="zoomMenos" class="boton boton-zoom" type="button" title="Alejar">&minus;</button>
+<div id="zoomIndicador" class="indicador-zoom">100%</div>
+<button id="zoomMas" class="boton boton-zoom" type="button" title="Acercar">+</button>
+<button id="zoomFit" class="boton" type="button">Ajustar</button>
+<button id="zoomReset" class="boton" type="button">Restablecer</button>
+</div>
+<div class="ayuda">Arrastra el arbol con el mouse para desplazarte</div>
+</div>
+<div id="astViewport" class="visor">
+<img id="astImagen" class="ast-imagen" src="ast_promptzal.png" alt="Arbol de Sintaxis Abstracta de PromptZal" draggable="false">
+</div>
+<div class="leyenda">
+<div class="leyenda-item">
+<span class="punto punto-programa"></span>
+<span>Programa y estructura general</span>
+</div>
+<div class="leyenda-item">
+<span class="punto punto-agente"></span>
+<span>Agentes</span>
+</div>
+<div class="leyenda-item">
+<span class="punto punto-variable"></span>
+<span>Variables y expresiones</span>
+</div>
+<div class="leyenda-item">
+<span class="punto punto-comando"></span>
+<span>Comandos y conectores</span>
+</div>
+</div>
+<div class="info">
+<strong>AST dinamico:</strong> este arbol fue construido recorriendo el objeto Programa generado por el parser. Su estructura cambia de acuerdo con las directivas, agentes, variables, comandos, ejecuciones y exportaciones del codigo PromptZal analizado.<br><br>
+<strong>Elementos actuales:</strong> 3 directivas, 2 agentes, 2 ejecuciones y 2 exportaciones.</div>
+</section>
+<footer>
+<span>PromptZal Compiler</span>
+<span>Reporte del AST</span>
+</footer>
+</main>
+<script>
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const visor =
+            document.getElementById("astViewport");
+
+        const imagen =
+            document.getElementById("astImagen");
+
+        const botonAumentar =
+            document.getElementById("zoomMas");
+
+        const botonDisminuir =
+            document.getElementById("zoomMenos");
+
+        const botonRestablecer =
+            document.getElementById("zoomReset");
+
+        const botonAjustar =
+            document.getElementById("zoomFit");
+
+        const indicador =
+            document.getElementById("zoomIndicador");
+
+        if (!visor || !imagen) {
+            return;
+        }
+
+        let escala = 1;
+        let desplazamientoX = 0;
+        let desplazamientoY = 0;
+
+        let arrastrando = false;
+        let inicioX = 0;
+        let inicioY = 0;
+        let origenX = 0;
+        let origenY = 0;
+
+        const escalaMinima = 0.20;
+        const escalaMaxima = 3.00;
+        const paso = 0.15;
+
+        function limitarEscala(valor) {
+
+            if (valor < escalaMinima) {
+                return escalaMinima;
+            }
+
+            if (valor > escalaMaxima) {
+                return escalaMaxima;
+            }
+
+            return valor;
+        }
+
+        function actualizarTransformacion() {
+
+            imagen.style.transform =
+                "translate("
+                + desplazamientoX
+                + "px, "
+                + desplazamientoY
+                + "px) scale("
+                + escala
+                + ")";
+
+            if (indicador) {
+
+                indicador.textContent =
+                    Math.round(
+                        escala * 100
+                    )
+                    + "%";
+            }
+        }
+
+        function centrarImagen() {
+
+            if (!imagen.naturalWidth
+                    || !imagen.naturalHeight) {
+                return;
+            }
+
+            const ancho =
+                imagen.naturalWidth * escala;
+
+            const alto =
+                imagen.naturalHeight * escala;
+
+            desplazamientoX =
+                (visor.clientWidth - ancho) / 2;
+
+            desplazamientoY =
+                (visor.clientHeight - alto) / 2;
+
+            actualizarTransformacion();
+        }
+
+        function ajustarImagen() {
+
+            if (!imagen.naturalWidth
+                    || !imagen.naturalHeight) {
+                return;
+            }
+
+            const margen = 40;
+
+            const escalaX =
+                (visor.clientWidth - margen)
+                / imagen.naturalWidth;
+
+            const escalaY =
+                (visor.clientHeight - margen)
+                / imagen.naturalHeight;
+
+            escala = Math.min(
+                escalaX,
+                escalaY,
+                1
+            );
+
+            escala = limitarEscala(escala);
+
+            centrarImagen();
+        }
+
+        function cambiarZoom(cambio) {
+
+            const escalaAnterior = escala;
+
+            escala = limitarEscala(
+                escala + cambio
+            );
+
+            if (escala === escalaAnterior) {
+                return;
+            }
+
+            const centroX =
+                visor.clientWidth / 2;
+
+            const centroY =
+                visor.clientHeight / 2;
+
+            const proporcion =
+                escala / escalaAnterior;
+
+            desplazamientoX =
+                centroX
+                - (
+                    centroX
+                    - desplazamientoX
+                ) * proporcion;
+
+            desplazamientoY =
+                centroY
+                - (
+                    centroY
+                    - desplazamientoY
+                ) * proporcion;
+
+            actualizarTransformacion();
+        }
+
+        function restablecer() {
+
+            escala = 1;
+            centrarImagen();
+        }
+
+        imagen.addEventListener(
+            "load",
+            function () {
+                ajustarImagen();
+            }
+        );
+
+        if (imagen.complete) {
+            ajustarImagen();
+        }
+
+        if (botonAumentar) {
+
+            botonAumentar.addEventListener(
+                "click",
+                function () {
+                    cambiarZoom(paso);
+                }
+            );
+        }
+
+        if (botonDisminuir) {
+
+            botonDisminuir.addEventListener(
+                "click",
+                function () {
+                    cambiarZoom(-paso);
+                }
+            );
+        }
+
+        if (botonRestablecer) {
+
+            botonRestablecer.addEventListener(
+                "click",
+                function () {
+                    restablecer();
+                }
+            );
+        }
+
+        if (botonAjustar) {
+
+            botonAjustar.addEventListener(
+                "click",
+                function () {
+                    ajustarImagen();
+                }
+            );
+        }
+
+        visor.addEventListener(
+            "pointerdown",
+            function (evento) {
+
+                arrastrando = true;
+
+                visor.classList.add(
+                    "arrastrando"
+                );
+
+                inicioX = evento.clientX;
+                inicioY = evento.clientY;
+
+                origenX = desplazamientoX;
+                origenY = desplazamientoY;
+
+                visor.setPointerCapture(
+                    evento.pointerId
+                );
+            }
+        );
+
+        visor.addEventListener(
+            "pointermove",
+            function (evento) {
+
+                if (!arrastrando) {
+                    return;
+                }
+
+                desplazamientoX =
+                    origenX
+                    + evento.clientX
+                    - inicioX;
+
+                desplazamientoY =
+                    origenY
+                    + evento.clientY
+                    - inicioY;
+
+                actualizarTransformacion();
+            }
+        );
+
+        visor.addEventListener(
+            "pointerup",
+            function (evento) {
+
+                arrastrando = false;
+
+                visor.classList.remove(
+                    "arrastrando"
+                );
+
+                if (visor.hasPointerCapture(
+                        evento.pointerId)) {
+
+                    visor.releasePointerCapture(
+                        evento.pointerId
+                    );
+                }
+            }
+        );
+
+        visor.addEventListener(
+            "pointercancel",
+            function () {
+
+                arrastrando = false;
+
+                visor.classList.remove(
+                    "arrastrando"
+                );
+            }
+        );
+
+        visor.addEventListener(
+            "dblclick",
+            function () {
+                ajustarImagen();
+            }
+        );
+
+        window.addEventListener(
+            "resize",
+            function () {
+                ajustarImagen();
+            }
+        );
+    }
+);
+
+</script>
+</body>
+</html>
